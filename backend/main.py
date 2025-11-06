@@ -1,0 +1,34 @@
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from backend.database import Base, engine
+from backend.routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient
+
+Base.metadata.create_all(bind=engine)
+
+app = FastAPI(title="Online Blood Sugar Monitoring System")
+
+# CORS middleware must be added before routers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Only allow frontend origin
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(users.router)
+app.include_router(patients.router)
+app.include_router(specialists.router)
+app.include_router(clinic_staff.router)
+app.include_router(readings.router)
+app.include_router(feedback.router)
+app.include_router(thresholds.router)
+app.include_router(alerts.router)
+app.include_router(reports.router)
+app.include_router(auth.router)
+app.include_router(specialist_patient.router)
+
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the Blood Sugar Monitoring System"}
