@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://blood-sugar-monitoring.onrender.com';
 
 function AdminDashboard() {
   const navigate = window.reactRouterNavigate || ((path) => { window.location.href = path; });
@@ -23,7 +23,7 @@ function AdminDashboard() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/users/`);
+  const res = await axios.get(`${API_BASE_URL}/users/`, { withCredentials: true });
       setUsers(res.data);
     } catch (err) {
       console.error('Error fetching users:', err);
@@ -33,7 +33,7 @@ function AdminDashboard() {
   const deleteUser = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/users/${userId}`);
+  await axios.delete(`${API_BASE_URL}/users/${userId}`, { withCredentials: true });
       setUsers(users.filter(u => u.id !== userId));
     } catch (err) {
       alert('Failed to delete user.');
@@ -43,7 +43,7 @@ function AdminDashboard() {
   const fetchReports = async (type) => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/reports/${type}`);
+  const res = await axios.get(`${API_BASE_URL}/reports/${type}`, { withCredentials: true });
       setReports(res.data);
     } catch (err) {
       console.error('Error fetching reports:', err);
