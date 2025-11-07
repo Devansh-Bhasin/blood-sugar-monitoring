@@ -1,3 +1,7 @@
+from fastapi.responses import Response
+@router.options("/login")
+def options_login():
+    return Response(status_code=204)
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi import Body
 from backend import schemas
