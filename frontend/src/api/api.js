@@ -21,6 +21,7 @@ import axios from "axios";
 // Set base URL for backend
 const API = axios.create({
   baseURL: "https://blood-sugar-monitoring.onrender.com",
+  withCredentials: true,
 });
 
 // Example: get all patients
