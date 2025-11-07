@@ -6,7 +6,7 @@ const Navbar = () => {
   const { role } = useAuth();
   const isLoggedIn = !!role;
   // Show only logo on login or registration page
-  const currentPath = window.location.pathname;
+  const currentPath = window.location.hash.replace('#', '');
   const isAuthPage = currentPath === "/login" || currentPath === "/register";
   const patientLinks = [
     { to: "/patient-dashboard", label: "Dashboard" },

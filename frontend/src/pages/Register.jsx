@@ -62,7 +62,7 @@ const Register = () => {
       <div style={{ background: "#fff", borderRadius: 14, boxShadow: "0 4px 24px rgba(0,0,0,0.10)", padding: "2.5rem 2rem", maxWidth: 400, width: "100%" }}>
         <h2 style={{ textAlign: "center", marginBottom: "1.5rem", fontWeight: 700, color: "#1976d2" }}>Register</h2>
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-          Already have an account? <a href="/login" style={{ color: "#1976d2", fontWeight: 500 }}>Login</a>
+          Already have an account? <a href="#/login" style={{ color: "#1976d2", fontWeight: 500 }}>Login</a>
         </div>
         <form onSubmit={handleRegister}>
           <input

@@ -118,7 +118,7 @@ const Login = () => {
               Forgot Password?
             </button>
             <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-              Don't have an account? <a href="/register" style={{ color: "#1976d2", fontWeight: 500 }}>Register</a>
+              Don't have an account? <a href="#/register" style={{ color: "#1976d2", fontWeight: 500 }}>Register</a>
             </div>
           </>
         ) : (
