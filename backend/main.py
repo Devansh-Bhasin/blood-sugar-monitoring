@@ -6,6 +6,8 @@ from backend.routers import patients, readings, specialists, auth, users, clinic
 
 Base.metadata.create_all(bind=engine)
 
+
+
 app = FastAPI(title="Online Blood Sugar Monitoring System")
 
 # CORS middleware must be added before routers
@@ -32,3 +34,5 @@ app.include_router(specialist_patient.router)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Blood Sugar Monitoring System"}
+
+
