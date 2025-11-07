@@ -13,8 +13,8 @@ app = FastAPI(title="Online Blood Sugar Monitoring System")
 # CORS middleware must be added before routers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://devansh-bhasin.github.io"],  # Only allow GitHub Pages frontend
-    allow_credentials=True,
+    allow_origins=["*"],  # TEMP: Allow all origins for debugging
+    allow_credentials=False,  # TEMP: Credentials not allowed for debugging
     allow_methods=["*"],
     allow_headers=["*"],
 )
