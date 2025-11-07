@@ -2,7 +2,7 @@ from fastapi.responses import Response
 @router.options("/login")
 def options_login():
     return Response(status_code=204)
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi import Body
 from backend import schemas
 import random, string
@@ -29,7 +29,11 @@ class LoginRequest(BaseModel):
 
 
 @router.post("/login")
-def login(data: LoginRequest, db: Session = Depends(get_db)):
+async def login(request: Request, data: LoginRequest):
+    # Only require DB for POST, not OPTIONS
+    if request.method == "OPTIONS":
+        return Response(status_code=204)
+    db = next(get_db())
     print("LOGIN REQUEST DATA:", data)
     email = data.email
     password = data.password
