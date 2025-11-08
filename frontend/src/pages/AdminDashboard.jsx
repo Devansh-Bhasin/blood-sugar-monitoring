@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-// IMPORTANT: Replace the URL below with your actual Vercel backend deployment URL after deploying (e.g., https://your-vercel-project.vercel.app/api)
-const API_BASE_URL = 'https://your-vercel-project.vercel.app/api';
+const API_BASE_URL = 'https://blood-sugar-monitoring-g3r1.vercel.app/api';
 
 function AdminDashboard() {
   const navigate = window.reactRouterNavigate || ((path) => { window.location.href = path; });
