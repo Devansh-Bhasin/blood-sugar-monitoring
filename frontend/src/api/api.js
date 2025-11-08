@@ -19,8 +19,9 @@ export const getPatientsForSpecialist = async (specialist_id) => {
 import axios from "axios";
 
 // Set base URL for backend
+// IMPORTANT: Replace the URL below with your actual Vercel backend deployment URL after deploying (e.g., https://your-vercel-project.vercel.app/api)
 const API = axios.create({
-  baseURL: "https://blood-sugar-monitoring.onrender.com",
+  baseURL: "https://your-vercel-project.vercel.app/api",
   withCredentials: true,
 });
 
