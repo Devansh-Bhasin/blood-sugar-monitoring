@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Online Blood Sugar Monitoring System")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for debugging
+    allow_origins=["https://devansh-bhasin.github.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
