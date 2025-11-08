@@ -1,3 +1,4 @@
+bcrypt==4.1.2
 annotated-doc==0.0.3
 annotated-types==0.7.0
 anyio==4.11.0
