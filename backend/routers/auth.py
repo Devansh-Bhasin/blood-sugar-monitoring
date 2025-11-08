@@ -67,15 +67,11 @@ def change_password(data: schemas.PasswordUpdate, db: Session = Depends(get_db),
 # In-memory store for codes (replace with Redis/DB for production)
 reset_codes = {}
 
+def send_email(to_email, subject, body):
 from backend.utils_email import send_email_alert
 
 def send_email(to_email, subject, body):
-    # Gmail SMTP configuration with new app password (no spaces)
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587
-    username = 'bloodsugarmonitor0@gmail.com'
-    password = 'udwnoqsqnssjcify'
-    success = send_email_alert(to_email, subject, body, smtp_server, smtp_port, username, password)
+    success = send_email_alert(to_email, subject, body)
     if not success:
         print(f"Failed to send email to {to_email}")
 

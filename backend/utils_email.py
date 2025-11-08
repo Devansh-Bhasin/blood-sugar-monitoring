@@ -1,50 +1,33 @@
-def send_email_alert(to_email, subject, body, smtp_server='smtp.example.com', smtp_port=587, username='', password=''):
-    msg = MIMEMultipart()
-    msg['From'] = username
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
-    try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        if username and password:
-            server.login(username, password)
-        server.sendmail(username, to_email, msg.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"Email send failed: {e}")
+import requests
+import os
+
+# Use Resend API for transactional email (https://resend.com/)
+RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "noreply@yourdomain.com")
+
+def send_email_alert(to_email, subject, body, *args, **kwargs):
+    if not RESEND_API_KEY:
+        print("Resend API key not set. Cannot send email.")
         return False
-
-def send_email(to_email, subject, body):
-    # Use Gmail SMTP config from auth.py
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587
-    username = 'bloodsugarmonitor0@gmail.com'
-    password = 'udwnoqsqnssjcify'
-    return send_email_alert(to_email, subject, body, smtp_server, smtp_port, username, password)
-
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-
-def send_email_alert(to_email, subject, body, smtp_server='smtp.example.com', smtp_port=587, username='', password=''):
-    msg = MIMEMultipart()
-    msg['From'] = username
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
     try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        if username and password:
-            server.login(username, password)
-        server.sendmail(username, to_email, msg.as_string())
-        server.quit()
-        return True
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "from": RESEND_FROM_EMAIL,
+                "to": [to_email],
+                "subject": subject,
+                "html": f"<pre>{body}</pre>"
+            }
+        )
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"Resend email failed: {response.status_code} {response.text}")
+            return False
     except Exception as e:
-        print(f"Email send failed: {e}")
+        print(f"Resend email exception: {e}")
         return False
