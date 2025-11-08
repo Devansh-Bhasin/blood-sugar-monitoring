@@ -1,3 +1,8 @@
+from fastapi.responses import Response
+# Explicit OPTIONS handler for /auth/login to ensure CORS preflight always succeeds
+@app.options("/auth/login")
+def options_auth_login():
+    return Response(status_code=204)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,8 +18,8 @@ app = FastAPI(title="Online Blood Sugar Monitoring System")
 # CORS middleware must be added before routers
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TEMP: Allow all origins for debugging
-    allow_credentials=False,  # TEMP: Credentials not allowed for debugging
+    allow_origins=["https://devansh-bhasin.github.io"],  # Only allow GitHub Pages frontend
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
