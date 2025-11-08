@@ -1,8 +1,5 @@
-from fastapi.responses import Response
-@router.options("/login")
-def options_login():
-    return Response(status_code=204)
 from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.responses import Response
 from fastapi import Body
 from backend import schemas
 import random, string
@@ -11,6 +8,11 @@ from backend.database import SessionLocal
 from backend import models
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+# Explicit OPTIONS handler for /login (must be after router is defined)
+@router.options("/login")
+def options_login():
+    return Response(status_code=204)
 
 def get_db():
     db = SessionLocal()
