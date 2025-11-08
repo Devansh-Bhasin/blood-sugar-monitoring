@@ -1,5 +1,7 @@
 from fastapi.responses import Response
 # Explicit OPTIONS handler for /auth/login to ensure CORS preflight always succeeds
+
+# Explicit OPTIONS handler for /auth/login (must be after app is defined)
 @app.options("/auth/login")
 def options_auth_login():
     return Response(status_code=204)
