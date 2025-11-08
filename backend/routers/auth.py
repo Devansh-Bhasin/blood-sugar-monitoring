@@ -14,6 +14,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def options_login():
     return Response(status_code=204)
 
+# Explicit OPTIONS handler for /forgot-password/request (for CORS preflight)
+@router.options("/forgot-password/request")
+def options_forgot_password_request():
+    return Response(status_code=204)
+
 def get_db():
     db = SessionLocal()
     try:
@@ -67,7 +72,6 @@ def change_password(data: schemas.PasswordUpdate, db: Session = Depends(get_db),
 # In-memory store for codes (replace with Redis/DB for production)
 reset_codes = {}
 
-def send_email(to_email, subject, body):
 from backend.utils_email import send_email_alert
 
 def send_email(to_email, subject, body):

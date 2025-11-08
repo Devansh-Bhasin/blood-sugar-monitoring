@@ -1,33 +1,31 @@
-import requests
-import os
 
-# Use Resend API for transactional email (https://resend.com/)
-RESEND_API_KEY = os.getenv("RESEND_API_KEY")
-RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "noreply@yourdomain.com")
+import os
+import requests
+
+MAILJET_API_KEY = os.getenv("MAILJET_API_KEY", "0bec382ee859232ed41b14faa8980e0e")
+MAILJET_API_SECRET = os.getenv("MAILJET_API_SECRET", "79988653b13c5803bf98b838344eff13")
+MAILJET_FROM_EMAIL = os.getenv("MAILJET_FROM_EMAIL", "your-verified@mailjet.email")  # Replace with your verified sender
 
 def send_email_alert(to_email, subject, body, *args, **kwargs):
-    if not RESEND_API_KEY:
-        print("Resend API key not set. Cannot send email.")
-        return False
-    try:
-        response = requests.post(
-            "https://api.resend.com/emails",
-            headers={
-                "Authorization": f"Bearer {RESEND_API_KEY}",
-                "Content-Type": "application/json"
-            },
-            json={
-                "from": RESEND_FROM_EMAIL,
-                "to": [to_email],
-                "subject": subject,
-                "html": f"<pre>{body}</pre>"
+    url = "https://api.mailjet.com/v3.1/send"
+    data = {
+        "Messages": [
+            {
+                "From": {"Email": MAILJET_FROM_EMAIL, "Name": "Blood Sugar Monitor"},
+                "To": [{"Email": to_email}],
+                "Subject": subject,
+                "HTMLPart": body
             }
-        )
-        if response.status_code == 200:
-            return True
-        else:
-            print(f"Resend email failed: {response.status_code} {response.text}")
-            return False
-    except Exception as e:
-        print(f"Resend email exception: {e}")
+        ]
+    }
+    response = requests.post(
+        url,
+        auth=(MAILJET_API_KEY, MAILJET_API_SECRET),
+        json=data
+    )
+    if response.status_code == 200:
+        print(f"Mailjet email sent to {to_email}")
+        return True
+    else:
+        print(f"Mailjet email failed: {response.status_code} {response.text}")
         return False
