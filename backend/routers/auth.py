@@ -15,10 +15,6 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 def options_login():
     return Response(status_code=204)
 
-# Explicit OPTIONS handler for /forgot-password/request (for CORS preflight)
-@router.options("/forgot-password/request")
-def options_forgot_password_request():
-    return Response(status_code=204)
 
 def get_db():
     db = SessionLocal()

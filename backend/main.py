@@ -24,16 +24,6 @@ def options_auth_login():
 
 from fastapi.requests import Request
 
-# Global OPTIONS handler for CORS preflight
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(request: Request, rest_of_path: str):
-    print(f"OPTIONS preflight for: {rest_of_path}")
-    response = Response(status_code=204)
-    response.headers["Access-Control-Allow-Origin"] = "https://devansh-bhasin.github.io"
-    response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
-    response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    return response
 
 api_prefix = "/api"
 app.include_router(users.router, prefix=api_prefix)
