@@ -30,7 +30,7 @@ from fastapi.requests import Request
 async def preflight_handler(request: Request, rest_of_path: str):
     print(f"OPTIONS preflight for: {rest_of_path}")
     response = Response(status_code=204)
-    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Origin"] = "https://devansh-bhasin.github.io"
     response.headers["Access-Control-Allow-Methods"] = "POST, GET, OPTIONS, PUT, DELETE"
     response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept"
     response.headers["Access-Control-Allow-Credentials"] = "true"
