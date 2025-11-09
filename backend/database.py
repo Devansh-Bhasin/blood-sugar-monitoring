@@ -1,4 +1,10 @@
+
 import os
+# Fix Heroku's old-style postgres:// URL
+db_url = os.getenv("DATABASE_URL")
+if db_url and db_url.startswith("postgres://"):
+    os.environ["DATABASE_URL"] = db_url.replace("postgres://", "postgresql://", 1)
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
