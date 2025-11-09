@@ -36,17 +36,18 @@ async def preflight_handler(request: Request, rest_of_path: str):
     response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
 
-app.include_router(users.router)
-app.include_router(patients.router)
-app.include_router(specialists.router)
-app.include_router(clinic_staff.router)
-app.include_router(readings.router)
-app.include_router(feedback.router)
-app.include_router(thresholds.router)
-app.include_router(alerts.router)
-app.include_router(reports.router)
-app.include_router(auth.router)
-app.include_router(specialist_patient.router)
+api_prefix = "/api"
+app.include_router(users.router, prefix=api_prefix)
+app.include_router(patients.router, prefix=api_prefix)
+app.include_router(specialists.router, prefix=api_prefix)
+app.include_router(clinic_staff.router, prefix=api_prefix)
+app.include_router(readings.router, prefix=api_prefix)
+app.include_router(feedback.router, prefix=api_prefix)
+app.include_router(thresholds.router, prefix=api_prefix)
+app.include_router(alerts.router, prefix=api_prefix)
+app.include_router(reports.router, prefix=api_prefix)
+app.include_router(auth.router, prefix=api_prefix)
+app.include_router(specialist_patient.router, prefix=api_prefix)
 
 @app.get("/")
 def read_root():
