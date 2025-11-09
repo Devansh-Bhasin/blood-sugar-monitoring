@@ -12,10 +12,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 from backend.database import Base, engine
 from backend.routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient
-
-Base.metadata.create_all(bind=engine)
 
 from fastapi.responses import Response
 @app.options("/auth/login")
@@ -52,5 +51,11 @@ app.include_router(specialist_patient.router, prefix=api_prefix)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to the Blood Sugar Monitoring System"}
+
+
+# Debug endpoint to list all registered routes
+@app.get("/api/debug/routes")
+def list_routes():
+    return {"routes": [str(route.path) + " [" + ",".join(route.methods or []) + "]" for route in app.routes]}
 
 
