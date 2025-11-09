@@ -1,3 +1,4 @@
+print("[auth.py] Importing and registering router...")
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import Response
 from fastapi import Body
