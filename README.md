@@ -64,4 +64,16 @@ A full-stack blood sugar monitoring system for clinics, built with FastAPI (Pyth
 - See `requirements.txt` and `frontend/package.json` for dependencies.
 
 ---
+## 🎯 Purpose
+This project helps clinics monitor blood sugar levels effectively:
+- Track patient readings
+- Send alerts for abnormal readings
+- Provide insights for specialists
+
+## 🚀 Usage Examples
+### Backend
+```bash
+pip install -r requirements.txt
+uvicorn backend.main:app --reload
+
 For questions or contributions, open an issue or pull request.
