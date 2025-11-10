@@ -43,13 +43,13 @@ def assign_patient_to_specialist(data: schemas.SpecialistPatientAssign = Body(..
             db.refresh(existing)
             # Send email notification to specialist and patient
             if specialist and specialist.user and patient and patient.user:
-                from backend.utils_email import send_email
+                from backend.utils_email import send_email_alert
                 subject = "Patient Assignment Updated"
                 body_spec = f"Patient {patient.user.full_name} (ID: {patient_id}) assignment updated by staff member {staff.user.full_name if staff else 'Unknown'} at {existing.assigned_at}."
                 body_pat = f"You have been assigned to specialist {specialist.user.full_name} (ID: {specialist_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {existing.assigned_at}."
                 try:
-                    send_email(specialist.user.email, subject, body_spec)
-                    send_email(patient.user.email, subject, body_pat)
+                    send_email_alert(specialist.user.email, subject, body_spec)
+                    send_email_alert(patient.user.email, subject, body_pat)
                 except Exception as e:
                     print(f"Assignment email send failed: {e}")
             return {"detail": "Patient assignment updated."}
@@ -68,13 +68,13 @@ def assign_patient_to_specialist(data: schemas.SpecialistPatientAssign = Body(..
             db.refresh(assignment)
             # Send email notification to specialist and patient
             if specialist and specialist.user and patient and patient.user:
-                from backend.utils_email import send_email
+                from backend.utils_email import send_email_alert
                 subject = "New Patient Assignment"
                 body_spec = f"You have been assigned a new patient: {patient.user.full_name} (ID: {patient_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
                 body_pat = f"You have been assigned to specialist {specialist.user.full_name} (ID: {specialist_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
                 try:
-                    send_email(specialist.user.email, subject, body_spec)
-                    send_email(patient.user.email, subject, body_pat)
+                    send_email_alert(specialist.user.email, subject, body_spec)
+                    send_email_alert(patient.user.email, subject, body_pat)
                 except Exception as e:
                     print(f"Assignment email send failed: {e}")
             return {"detail": "Patient assigned to specialist."}
@@ -95,25 +95,16 @@ def assign_patient_to_specialist(data: schemas.SpecialistPatientAssign = Body(..
     db.refresh(assignment)
     # Send email notification to specialist and patient
     if specialist and specialist.user and patient and patient.user:
-        from backend.utils_email import send_email
+        from backend.utils_email import send_email_alert
         subject = "New Patient Assignment"
         body_spec = f"You have been assigned a new patient: {patient.user.full_name} (ID: {patient_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
         body_pat = f"You have been assigned to specialist {specialist.user.full_name} (ID: {specialist_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
         try:
-            send_email(specialist.user.email, subject, body_spec)
-            send_email(patient.user.email, subject, body_pat)
+            send_email_alert(specialist.user.email, subject, body_spec)
+            send_email_alert(patient.user.email, subject, body_pat)
         except Exception as e:
             print(f"Assignment email send failed: {e}")
-            db.refresh(assignment)
-            # Send email notification to specialist and patient
-            if specialist and specialist.user and patient and patient.user:
-                from backend.utils_email import send_email
-                subject = "New Patient Assignment"
-                body_spec = f"You have been assigned a new patient: {patient.user.full_name} (ID: {patient_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
-                body_pat = f"You have been assigned to specialist {specialist.user.full_name} (ID: {specialist_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
-                send_email(specialist.user.email, subject, body_spec)
-                send_email(patient.user.email, subject, body_pat)
-            return {"detail": "Patient assigned to specialist."}
+        return {"detail": "Patient assigned to specialist."}
     # Count current assignments for the specialist
     count = db.query(models.SpecialistPatient).filter_by(specialist_id=specialist_id).count()
     if count >= 10:
@@ -131,13 +122,13 @@ def assign_patient_to_specialist(data: schemas.SpecialistPatientAssign = Body(..
     db.refresh(assignment)
     # Send email notification to specialist and patient
     if specialist and specialist.user and patient and patient.user:
-        from backend.utils_email import send_email
+        from backend.utils_email import send_email_alert
         subject = "New Patient Assignment"
         body_spec = f"You have been assigned a new patient: {patient.user.full_name} (ID: {patient_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
         body_pat = f"You have been assigned to specialist {specialist.user.full_name} (ID: {specialist_id}) by staff member {staff.user.full_name if staff else 'Unknown'} at {assignment.assigned_at}."
-        send_email(specialist.user.email, subject, body_spec)
-        send_email(patient.user.email, subject, body_pat)
-    return {"detail": "Patient assigned to specialist."}
+        send_email_alert(specialist.user.email, subject, body_spec)
+        send_email_alert(patient.user.email, subject, body_pat)
+        return {"detail": "Patient assigned to specialist."}
 
 @router.post("/unassign")
 def unassign_patient_from_specialist(data: schemas.SpecialistPatientAssign = Body(...), db: Session = Depends(get_db)):
