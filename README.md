@@ -1,18 +1,67 @@
+
 # Blood Sugar Monitoring
 
-A full-stack blood sugar monitoring system with FastAPI backend and React frontend.
+A full-stack blood sugar monitoring system for clinics, built with FastAPI (Python) and React (JavaScript).
 
 ## Features
-- Patient, Specialist, Staff, Admin roles
-- Blood sugar readings, auto-categorization
-- Specialist-patient assignment
+- Patient, Specialist, Staff, and Admin roles
+- Secure authentication (JWT)
+- Blood sugar readings with auto-categorization and alerts
+- Specialist-patient assignment with email notifications (Mailjet)
 - Dashboards for all roles
-- Alerts, feedback, AI suggestions
-- Modern UI
+- AI-based suggestions and feedback
+- Modern responsive UI
+- Deployed backend (Heroku) and frontend (GitHub Pages)
 
 ## Tech Stack
-- Backend: FastAPI, SQLAlchemy, SQLite
-- Frontend: React, Axios
+| Layer     | Language   | Framework/Library      | Platform         |
+|-----------|------------|------------------------|------------------|
+| Backend   | Python     | FastAPI, SQLAlchemy    | Heroku           |
+| Frontend  | JavaScript | React, Vite, Axios     | GitHub Pages     |
+| Database  | SQL        | PostgreSQL             | Heroku Postgres  |
+| Email     | -          | Mailjet API            | Mailjet          |
 
-## Setup
-See requirements.txt and package.json for dependencies.
+## Deployment URLs
+- **Backend (Heroku):** https://blood-sugar-monitoring-system-3c4cc007e08e.herokuapp.com/
+- **Frontend (GitHub Pages):** [your-github-pages-link]
+
+## Setup & Development
+
+### Backend (FastAPI)
+1. Install dependencies:
+	```bash
+	pip install -r requirements.txt
+	```
+2. Set environment variables (see Heroku config for: `DATABASE_URL`, `MAILJET_API_KEY`, `MAILJET_API_SECRET`, `MAILJET_FROM_EMAIL`)
+3. Run locally:
+	```bash
+	uvicorn backend.main:app --reload
+	```
+4. Deploy to Heroku:
+	```bash
+	git push heroku master
+	```
+
+### Frontend (React)
+1. Install dependencies:
+	```bash
+	cd frontend
+	npm install
+	```
+2. Run locally:
+	```bash
+	npm run dev
+	```
+3. Build & deploy to GitHub Pages:
+	```bash
+	npm run build && npm run deploy
+	```
+
+## Notes
+- All API endpoints are prefixed with `/api/`.
+- CORS is configured for frontend-backend integration.
+- Email notifications use Mailjet (ensure sender is verified).
+- See `requirements.txt` and `frontend/package.json` for dependencies.
+
+---
+For questions or contributions, open an issue or pull request.
