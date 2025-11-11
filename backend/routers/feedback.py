@@ -15,24 +15,26 @@ def get_db():
 @router.post("/", response_model=schemas.Feedback)
 def create_feedback(feedback: schemas.FeedbackCreate, db: Session = Depends(get_db), Authorization: str = None):
     try:
-        # Look up specialist_id from user_id in token if needed
-        if feedback.specialist_id is None or feedback.specialist_id == 0:
-            user_id = None
-            if Authorization:
-                token = Authorization.replace("Bearer ", "")
-                if token.startswith("token-"):
-                    user_id = int(token.split("-")[1])
-            if user_id:
-                specialist = db.query(crud.models.Specialist).filter_by(user_id=user_id).first()
-                if not specialist:
-                    raise HTTPException(status_code=400, detail="Specialist not found for user.")
-                feedback.specialist_id = specialist.specialist_id
-            else:
-                raise HTTPException(status_code=400, detail="No specialist_id or valid token provided.")
-        db_feedback = crud.create_feedback(db, feedback)
+        # Always look up specialist_id from user_id in token
+        user_id = None
+        if Authorization:
+            token = Authorization.replace("Bearer ", "")
+            if token.startswith("token-"):
+                user_id = int(token.split("-")[1])
+        if user_id:
+            specialist = db.query(crud.models.Specialist).filter_by(user_id=user_id).first()
+            if not specialist:
+                raise HTTPException(status_code=400, detail="Specialist not found for user.")
+            correct_specialist_id = specialist.specialist_id
+        else:
+            raise HTTPException(status_code=400, detail="No valid token provided.")
+        # Create a new FeedbackCreate with the correct specialist_id
+        feedback_data = feedback.dict()
+        feedback_data["specialist_id"] = correct_specialist_id
+        new_feedback = schemas.FeedbackCreate(**feedback_data)
+        db_feedback = crud.create_feedback(db, new_feedback)
         # Send email notification to patient
         from backend.utils_email import send_email_alert
-        # Get patient email
         patient = db.query(crud.models.Patient).filter_by(patient_id=feedback.patient_id).first()
         if patient and patient.user and patient.user.email:
             subject = "New Feedback from Your Specialist"
