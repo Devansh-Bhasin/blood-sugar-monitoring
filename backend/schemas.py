@@ -8,9 +8,9 @@ from typing import List, Optional
 import datetime
 
 class SpecialistPatientAssign(BaseModel):
-    specialist_id: int
-    patient_id: int
-    assigned_by: int
+    specialist_id: Optional[int] = None
+    patient_id: Optional[int] = None
+    assigned_by: Optional[int] = None
 
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
