@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
@@ -13,7 +13,7 @@ def get_db():
         db.close()
 
 @router.post("/", response_model=schemas.Feedback)
-def create_feedback(feedback: schemas.FeedbackCreate, db: Session = Depends(get_db), Authorization: str = None):
+def create_feedback(feedback: schemas.FeedbackCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
     import jwt
     import os
     from jwt import ExpiredSignatureError, InvalidTokenError
