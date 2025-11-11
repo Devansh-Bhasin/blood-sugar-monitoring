@@ -1,4 +1,5 @@
 
+
 from fastapi import APIRouter, Depends, HTTPException, Header, Body
 from sqlalchemy.orm import Session
 from backend import crud, schemas
@@ -31,12 +32,6 @@ def get_my_patients(db: Session = Depends(get_db), Authorization: str = Header(N
     patient_ids = [a.patient_id for a in assignments]
     patients = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id.in_(patient_ids)).all()
     return patients
-from fastapi import APIRouter, Depends, HTTPException, Header, Body
-from sqlalchemy.orm import Session
-from backend import crud, schemas
-from backend.database import SessionLocal
-
-router = APIRouter(prefix="/specialists", tags=["specialists"])
 
 def get_db():
     db = SessionLocal()
