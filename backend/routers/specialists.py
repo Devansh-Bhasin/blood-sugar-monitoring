@@ -15,16 +15,26 @@ def get_db():
         db.close()
 
 # Dummy token auth for demo (replace with real auth)
+
+# JWT-based user_id extraction
+import jwt
 def get_current_user_id(token: str):
-    # token format: token-<user_id>
-    if token and token.startswith("token-"):
-        return int(token.split("-")[1])
-    return None
+    if not token:
+        return None
+    JWT_SECRET = "supersecretkey"  # Should match login endpoint
+    JWT_ALGORITHM = "HS256"
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return int(payload.get("sub"))
+    except Exception:
+        return None
 
 # Place after router and get_db definitions
 @router.get("/patients", response_model=list[schemas.Patient])
 def get_my_patients(db: Session = Depends(get_db), Authorization: str = Header(None)):
     user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid or missing token")
     specialist = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).first()
     if not specialist:
         raise HTTPException(status_code=404, detail="Specialist not found")
