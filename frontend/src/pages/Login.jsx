@@ -25,7 +25,27 @@ const Login = () => {
         localStorage.setItem("role", role);
         window.dispatchEvent(new Event("roleChanged"));
       }
-      if (res.data.role) {
+      // --- JWT decode logic ---
+      function parseJwt (token) {
+        try {
+          return JSON.parse(atob(token.split('.')[1]));
+        } catch (e) { return {}; }
+      }
+      let userId = null;
+      if (res.data.access_token && res.data.access_token.split('.').length === 3) {
+        const payload = parseJwt(res.data.access_token);
+        if (payload && payload.sub) {
+          userId = payload.sub;
+          if (role === "patient") {
+            localStorage.setItem("patient_id", userId);
+          } else if (role === "specialist") {
+            localStorage.setItem("specialist_id", userId);
+          } else if (role === "staff" || role === "clinic_staff") {
+            localStorage.setItem("staff_id", userId);
+          }
+        }
+      } else if (res.data.role) {
+        // fallback for old token format
         const tokenParts = res.data.access_token.split("-");
         if (tokenParts.length === 2) {
           if (role === "patient") {
@@ -33,6 +53,9 @@ const Login = () => {
           }
           if (role === "specialist") {
             localStorage.setItem("specialist_id", tokenParts[1]);
+          }
+          if (role === "staff" || role === "clinic_staff") {
+            localStorage.setItem("staff_id", tokenParts[1]);
           }
         }
       }
