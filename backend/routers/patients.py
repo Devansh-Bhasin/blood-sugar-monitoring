@@ -41,11 +41,12 @@ def get_current_patient(request: Request, db: Session = Depends(get_db)):
         print(f"DEBUG /patients/me: error decoding JWT: {e}")
         raise HTTPException(status_code=401, detail="Invalid token format")
     print(f"DEBUG /patients/me user_id: {user_id}")
-    patient = db.query(crud.models.Patient).filter_by(user_id=user_id).first()
+    from backend import models
+    patient = db.query(models.Patient).join(models.User).filter(models.User.user_id == user_id).first()
     print(f"DEBUG /patients/me patient query result: {patient}")
     if not patient:
         print(f"DEBUG /patients/me: patient not found for user_id {user_id}")
-        all_patients = db.query(crud.models.Patient.patient_id).all()
+        all_patients = db.query(models.Patient.patient_id).all()
         print(f"DEBUG /patients/me: all patient_ids in DB: {[p[0] for p in all_patients]}")
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
@@ -66,7 +67,8 @@ def update_current_patient(form: schemas.PatientCreate, request: Request, db: Se
         user_id = int(payload.get("sub"))
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid token format")
-    patient = db.query(crud.models.Patient).filter_by(user_id=user_id).first()
+    from backend import models
+    patient = db.query(models.Patient).join(models.User).filter(models.User.user_id == user_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     # Update patient fields
