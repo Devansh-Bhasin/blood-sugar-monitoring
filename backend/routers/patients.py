@@ -27,20 +27,24 @@ def get_current_patient(request: Request, db: Session = Depends(get_db)):
     print("DEBUG /patients/me endpoint called")
     token = request.headers.get("authorization", "").replace("Bearer ", "")
     print(f"DEBUG /patients/me token: {token}")
-    if not token or not token.startswith("token-"):
-        print("DEBUG /patients/me: missing or invalid token")
-        raise HTTPException(status_code=401, detail="Missing or invalid token")
+    import jwt
+    user_id = None
+    if not token:
+        print("DEBUG /patients/me: missing token")
+        raise HTTPException(status_code=401, detail="Missing token")
     try:
-        user_id = int(token.split("-")[1])
+        JWT_SECRET = "supersecretkey"  # Should match login endpoint
+        JWT_ALGORITHM = "HS256"
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = int(payload.get("sub"))
     except Exception as e:
-        print(f"DEBUG /patients/me: error extracting user_id from token: {e}")
+        print(f"DEBUG /patients/me: error decoding JWT: {e}")
         raise HTTPException(status_code=401, detail="Invalid token format")
     print(f"DEBUG /patients/me user_id: {user_id}")
-    patient = db.query(crud.models.Patient).filter_by(patient_id=user_id).first()
+    patient = db.query(crud.models.Patient).filter_by(user_id=user_id).first()
     print(f"DEBUG /patients/me patient query result: {patient}")
     if not patient:
         print(f"DEBUG /patients/me: patient not found for user_id {user_id}")
-        # Print all patient_ids for reference
         all_patients = db.query(crud.models.Patient.patient_id).all()
         print(f"DEBUG /patients/me: all patient_ids in DB: {[p[0] for p in all_patients]}")
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -51,10 +55,18 @@ def get_current_patient(request: Request, db: Session = Depends(get_db)):
 def update_current_patient(form: schemas.PatientCreate, request: Request, db: Session = Depends(get_db)):
     print("DEBUG /patients/me PUT received:", form.dict())
     token = request.headers.get("authorization", "").replace("Bearer ", "")
-    if not token or not token.startswith("token-"):
-        raise HTTPException(status_code=401, detail="Missing or invalid token")
-    user_id = int(token.split("-")[1])
-    patient = db.query(crud.models.Patient).filter_by(patient_id=user_id).first()
+    import jwt
+    user_id = None
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing token")
+    try:
+        JWT_SECRET = "supersecretkey"  # Should match login endpoint
+        JWT_ALGORITHM = "HS256"
+        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        user_id = int(payload.get("sub"))
+    except Exception as e:
+        raise HTTPException(status_code=401, detail="Invalid token format")
+    patient = db.query(crud.models.Patient).filter_by(user_id=user_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
     # Update patient fields
