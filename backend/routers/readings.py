@@ -49,7 +49,7 @@ def categorize_reading(value, unit):
 def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)):
     import datetime
     from backend.utils_email import send_email_alert
-        category = categorize_reading(reading.value, reading.unit, patient_id=reading.patient_id, db=db)
+    category = categorize_reading(reading.value, reading.unit, patient_id=reading.patient_id, db=db)
     db_reading = crud.create_reading(db, schemas.ReadingCreate(
         patient_id=reading.patient_id,
         value=reading.value,
