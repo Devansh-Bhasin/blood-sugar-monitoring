@@ -43,19 +43,13 @@ def get_my_patients(db: Session = Depends(get_db), Authorization: str = Header(N
     patients = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id.in_(patient_ids)).all()
     return patients
 
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
-# Dummy token auth for demo (replace with real auth)
-def get_current_user_id(token: str):
-    # token format: token-<user_id>
-    if token and token.startswith("token-"):
-        return int(token.split("-")[1])
-    return None
 
 # Update specialist profile (user fields)
 from fastapi import Body
