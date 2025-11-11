@@ -1,9 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
-  const { role } = useAuth();
+  const { role, setRole } = useAuth();
+  const navigate = useNavigate();
   const isLoggedIn = !!role;
   // Show only logo on login or registration page
   const currentPath = window.location.hash.replace('#', '');
@@ -41,7 +42,10 @@ const Navbar = () => {
   // Add logout button for logged-in users
   const handleLogout = () => {
     localStorage.removeItem("token");
-    window.location.href = "/register";
+    localStorage.removeItem("role");
+    setRole(null);
+    window.dispatchEvent(new Event("roleChanged"));
+  navigate("/");
   };
 
   return (
@@ -61,43 +65,29 @@ const Navbar = () => {
         <Link to="/" style={{ color: "white", textDecoration: "none", fontWeight: 700, fontSize: 22, letterSpacing: 1 }}>
           Blood Sugar Monitor
         </Link>
-        {/* Staff: show dashboard/profile/logout only if logged in and not on login/register page */}
-        {!isAuthPage && isLoggedIn && (role === "staff" || role === "clinic_staff") && (
+        {/* Show dashboard/profile/add reading/logout for all roles if logged in and not on login/register page */}
+        {!isAuthPage && isLoggedIn && (
           <>
-            <Link
-              to="/staff-dashboard"
-              style={{
-                color: "white",
-                textDecoration: "none",
-                fontWeight: 500,
-                fontSize: 16,
-                padding: "0.3rem 0.7rem",
-                borderRadius: 6,
-                transition: "background 0.2s",
-                background: "none"
-              }}
-              onMouseOver={e => e.currentTarget.style.background = "#1565c0"}
-              onMouseOut={e => e.currentTarget.style.background = "none"}
-            >
-              Dashboard
-            </Link>
-            <Link
-              to="/staff-profile"
-              style={{
-                color: "white",
-                textDecoration: "none",
-                fontWeight: 500,
-                fontSize: 16,
-                padding: "0.3rem 0.7rem",
-                borderRadius: 6,
-                transition: "background 0.2s",
-                background: "none"
-              }}
-              onMouseOver={e => e.currentTarget.style.background = "#1565c0"}
-              onMouseOut={e => e.currentTarget.style.background = "none"}
-            >
-              Profile
-            </Link>
+            {navLinks.map(link => (
+              <Link
+                key={link.to}
+                to={link.to}
+                style={{
+                  color: "white",
+                  textDecoration: "none",
+                  fontWeight: 500,
+                  fontSize: 16,
+                  padding: "0.3rem 0.7rem",
+                  borderRadius: 6,
+                  transition: "background 0.2s",
+                  background: "none"
+                }}
+                onMouseOver={e => e.currentTarget.style.background = "#1565c0"}
+                onMouseOut={e => e.currentTarget.style.background = "none"}
+              >
+                {link.label}
+              </Link>
+            ))}
             <button
               onClick={handleLogout}
               style={{
