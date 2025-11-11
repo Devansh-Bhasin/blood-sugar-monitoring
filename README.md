@@ -23,7 +23,7 @@ A full-stack blood sugar monitoring system for clinics, built with FastAPI (Pyth
 
 ## Deployment URLs
 - **Backend (Heroku):** https://blood-sugar-monitoring-system-3c4cc007e08e.herokuapp.com/
-- **Frontend (GitHub Pages):** [your-github-pages-link]
+- **Frontend (GitHub Pages):** https://devansh-bhasin.github.io/blood-sugar-monitoring/
 
 ## Setup & Development
 
