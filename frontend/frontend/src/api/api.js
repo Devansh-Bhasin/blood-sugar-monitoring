@@ -20,7 +20,7 @@ import axios from "axios";
 
 // Set base URL for backend
 const API = axios.create({
-  baseURL: "https://blood-sugar-monitoring-g3r1.vercel.app/api",
+  baseURL: "https://blood-sugar-monitoring-system-3c4cc007e08e.herokuapp.com/api",
   withCredentials: true,
 });
 

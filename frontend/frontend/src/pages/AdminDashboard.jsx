@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'https://blood-sugar-monitoring-g3r1.vercel.app/api';
+const API_BASE_URL = 'https://blood-sugar-monitoring-system-3c4cc007e08e.herokuapp.com/api';
 
 function AdminDashboard() {
   const navigate = window.reactRouterNavigate || ((path) => { window.location.href = path; });
