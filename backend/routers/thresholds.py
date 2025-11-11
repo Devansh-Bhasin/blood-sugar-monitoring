@@ -20,6 +20,13 @@ def create_threshold(threshold: schemas.ThresholdCreate, db: Session = Depends(g
 def list_thresholds(db: Session = Depends(get_db)):
     return crud.get_thresholds(db)
 
+@router.get("/patient/{patient_id}", response_model=schemas.Threshold)
+def get_patient_threshold(patient_id: int, db: Session = Depends(get_db)):
+    threshold = crud.get_threshold_for_patient(db, patient_id)
+    if not threshold:
+        raise HTTPException(status_code=404, detail="Threshold not set for this patient.")
+    return threshold
+
 @router.post("/sample", response_model=schemas.Threshold)
 def create_sample_threshold(db: Session = Depends(get_db)):
     sample_threshold = schemas.ThresholdCreate(

@@ -137,6 +137,7 @@ class Feedback(FeedbackBase):
 
 # --- Threshold Schemas ---
 class ThresholdBase(BaseModel):
+    patient_id: int
     min_normal: float
     max_normal: float
     max_borderline: float

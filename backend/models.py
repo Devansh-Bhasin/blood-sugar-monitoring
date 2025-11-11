@@ -96,12 +96,14 @@ class Feedback(Base):
 class Threshold(Base):
     __tablename__ = "thresholds"
     threshold_id = Column(Integer, primary_key=True, index=True)
+    patient_id = Column(Integer, ForeignKey("patients.patient_id"), nullable=False)
     min_normal = Column(Numeric(6,2), nullable=False)
     max_normal = Column(Numeric(6,2), nullable=False)
     max_borderline = Column(Numeric(6,2), nullable=False)
     configured_by = Column(Integer, ForeignKey("clinic_staff.staff_id"))
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
     staff = relationship("ClinicStaff", back_populates="thresholds")
+    patient = relationship("Patient", backref="thresholds")
 
 # --- Alerts Table ---
 class Alert(Base):
