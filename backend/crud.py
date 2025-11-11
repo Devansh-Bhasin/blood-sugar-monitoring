@@ -111,7 +111,7 @@ def get_feedback_for_patient(db: Session, patient_id: int):
 
 # --- Threshold CRUD ---
 def create_threshold(db: Session, threshold: schemas.ThresholdCreate):
-    existing = db.query(models.Threshold).first()
+    existing = db.query(models.Threshold).filter(models.Threshold.patient_id == threshold.patient_id).first()
     if existing:
         existing.min_normal = threshold.min_normal
         existing.max_normal = threshold.max_normal
@@ -123,6 +123,7 @@ def create_threshold(db: Session, threshold: schemas.ThresholdCreate):
         return existing
     else:
         db_threshold = models.Threshold(
+            patient_id=threshold.patient_id,
             min_normal=threshold.min_normal,
             max_normal=threshold.max_normal,
             max_borderline=threshold.max_borderline,
@@ -136,6 +137,9 @@ def create_threshold(db: Session, threshold: schemas.ThresholdCreate):
 
 def get_thresholds(db: Session):
     return db.query(models.Threshold).all()
+
+def get_threshold_for_patient(db: Session, patient_id: int):
+    return db.query(models.Threshold).filter(models.Threshold.patient_id == patient_id).first()
 
 # --- Alert CRUD ---
 def create_alert(db: Session, alert: schemas.AlertCreate):
