@@ -14,13 +14,23 @@ def get_db():
 
 @router.post("/", response_model=schemas.Feedback)
 def create_feedback(feedback: schemas.FeedbackCreate, db: Session = Depends(get_db), Authorization: str = None):
+    import jwt
+    import os
+    from jwt import ExpiredSignatureError, InvalidTokenError
     try:
         # Always look up specialist_id from user_id in token
         user_id = None
         if Authorization:
             token = Authorization.replace("Bearer ", "")
-            if token.startswith("token-"):
-                user_id = int(token.split("-")[1])
+            JWT_SECRET = "supersecretkey"  # Should match login endpoint
+            JWT_ALGORITHM = "HS256"
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+                user_id = int(payload.get("sub"))
+            except ExpiredSignatureError:
+                raise HTTPException(status_code=401, detail="Token expired.")
+            except InvalidTokenError:
+                raise HTTPException(status_code=401, detail="Invalid token.")
         if user_id:
             specialist = db.query(crud.models.Specialist).filter_by(user_id=user_id).first()
             if not specialist:

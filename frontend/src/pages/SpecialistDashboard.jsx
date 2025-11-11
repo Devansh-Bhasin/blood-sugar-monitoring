@@ -65,12 +65,20 @@ const SpecialistDashboard = () => {
       // Assume specialist_id is stored in localStorage after login
       const specialistId = localStorage.getItem("specialist_id");
       if (!specialistId) return alert("Specialist ID missing");
-      await api.post("/feedback/", {
-        specialist_id: parseInt(specialistId),
-        patient_id: selectedPatient,
-        reading_id: selectedReadingId,
-        comments: feedbackText,
-      });
+      await api.post(
+        "/feedback/",
+        {
+          specialist_id: parseInt(specialistId),
+          patient_id: selectedPatient,
+          reading_id: selectedReadingId,
+          comments: feedbackText,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
       setFeedbackText("");
       setSelectedReadingId(null);
       // Refresh feedbacks
