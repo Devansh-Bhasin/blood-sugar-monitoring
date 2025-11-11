@@ -26,13 +26,22 @@ const Login = () => {
         window.dispatchEvent(new Event("roleChanged"));
       }
       if (res.data.role) {
-        const tokenParts = res.data.access_token.split("-");
-        if (tokenParts.length === 2) {
+        // Decode JWT to get user id (sub)
+        const token = res.data.access_token;
+        function parseJwt (token) {
+          try {
+            return JSON.parse(atob(token.split('.')[1]));
+          } catch (e) {
+            return null;
+          }
+        }
+        const payload = parseJwt(token);
+        if (payload && payload.sub) {
           if (role === "patient") {
-            localStorage.setItem("patient_id", tokenParts[1]);
+            localStorage.setItem("patient_id", payload.sub);
           }
           if (role === "specialist") {
-            localStorage.setItem("specialist_id", tokenParts[1]);
+            localStorage.setItem("specialist_id", payload.sub);
           }
         }
       }
