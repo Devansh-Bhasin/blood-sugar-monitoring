@@ -1,4 +1,5 @@
 print("[auth.py] Importing and registering router...")
+
 from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import Response
 from fastapi import Body
@@ -7,6 +8,8 @@ import random, string
 from sqlalchemy.orm import Session
 from backend.database import SessionLocal
 from backend import models
+import jwt
+import datetime
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -32,6 +35,7 @@ class LoginRequest(BaseModel):
     password: str
 
 
+
 @router.post("/login")
 async def login(request: Request, data: LoginRequest):
     # Only require DB for POST, not OPTIONS
@@ -46,8 +50,19 @@ async def login(request: Request, data: LoginRequest):
     if not user or not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     print("LOGIN SUCCESS FOR:", email)
+
+    # JWT secret and algorithm
+    JWT_SECRET = "supersecretkey"  # TODO: Use env var in production
+    JWT_ALGORITHM = "HS256"
+    payload = {
+        "sub": str(user.user_id),
+        "role": user.role,
+        "full_name": user.full_name,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+    }
+    access_token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     return {
-        "access_token": f"token-{user.user_id}",
+        "access_token": access_token,
         "role": user.role,
         "full_name": user.full_name
     }
