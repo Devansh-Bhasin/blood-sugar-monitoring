@@ -14,7 +14,20 @@ def get_db():
 
 @router.post("/", response_model=schemas.Feedback)
 def create_feedback(feedback: schemas.FeedbackCreate, db: Session = Depends(get_db)):
-    return crud.create_feedback(db, feedback)
+    try:
+        db_feedback = crud.create_feedback(db, feedback)
+        # Send email notification to patient
+        from backend.utils_email import send_email_alert
+        # Get patient email
+        patient = db.query(crud.models.Patient).filter_by(patient_id=feedback.patient_id).first()
+        if patient and patient.user and patient.user.email:
+            subject = "New Feedback from Your Specialist"
+            body = f"You have received new feedback from your specialist: <br><br> <b>Comment:</b> {feedback.comments}"
+            send_email_alert(patient.user.email, subject, body)
+        return db_feedback
+    except Exception as e:
+        print(f"Error in create_feedback: {e}")
+        raise HTTPException(status_code=500, detail="Failed to submit feedback.")
 
 @router.get("/patient/{patient_id}", response_model=list[schemas.Feedback])
 def get_feedback_for_patient(patient_id: int, db: Session = Depends(get_db)):
