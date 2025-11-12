@@ -1,6 +1,12 @@
+
+# Specialist-specific appointments endpoint (must be after router is defined)
 @router.get("/specialist/{specialist_id}", response_model=List[schemas.Appointment])
 def list_appointments_by_specialist(specialist_id: int, db: Session = Depends(get_db)):
-    return db.query(models.Appointment).filter(models.Appointment.staff_id == specialist_id).all()
+    appts = db.query(models.Appointment).filter(models.Appointment.staff_id == specialist_id).all()
+    for a in appts:
+        a.patient_name = a.patient.user.full_name if a.patient and a.patient.user else ""
+        a.specialist_name = a.staff.user.full_name if a.staff and a.staff.user else ""
+    return appts
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
