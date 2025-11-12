@@ -1,3 +1,29 @@
+# --- Appointment Schemas ---
+class AppointmentBase(BaseModel):
+    patient_id: int
+    staff_id: int
+    start_time: datetime.datetime
+    end_time: datetime.datetime
+    reason: str = None
+    notes: str = None
+    status: str = "scheduled"
+
+class AppointmentCreate(AppointmentBase):
+    pass
+
+class AppointmentUpdate(BaseModel):
+    start_time: datetime.datetime = None
+    end_time: datetime.datetime = None
+    reason: str = None
+    notes: str = None
+    status: str = None
+
+class Appointment(AppointmentBase):
+    appointment_id: int
+    created_at: datetime.datetime
+    updated_at: datetime.datetime
+    class Config:
+        orm_mode = True
 
 
 

@@ -12,20 +12,41 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
 
+  // Helper to decode JWT
+  function parseJwt(token) {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) { return {}; }
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       const res = await api.post("/auth/login", { email, password }, {
         headers: { 'Content-Type': 'application/json' }
       });
-      console.log('LOGIN RESPONSE:', res.data);
       localStorage.setItem("token", res.data.access_token);
       let role = res.data.role ? res.data.role.toLowerCase() : null;
       if (role) {
         localStorage.setItem("role", role);
         window.dispatchEvent(new Event("roleChanged"));
       }
-      if (res.data.role) {
+      // --- JWT decode logic ---
+      let userId = null;
+      if (res.data.access_token && res.data.access_token.split('.').length === 3) {
+        const payload = parseJwt(res.data.access_token);
+        if (payload && payload.sub) {
+          userId = payload.sub;
+          if (role === "patient") {
+            localStorage.setItem("patient_id", userId);
+          } else if (role === "specialist") {
+            localStorage.setItem("specialist_id", userId);
+          } else if (role === "staff" || role === "clinic_staff") {
+            localStorage.setItem("staff_id", userId);
+          }
+        }
+      } else if (res.data.role) {
+        // fallback for old token format
         const tokenParts = res.data.access_token.split("-");
         if (tokenParts.length === 2) {
           if (role === "patient") {
@@ -34,10 +55,11 @@ const Login = () => {
           if (role === "specialist") {
             localStorage.setItem("specialist_id", tokenParts[1]);
           }
+          if (role === "staff" || role === "clinic_staff") {
+            localStorage.setItem("staff_id", tokenParts[1]);
+          }
         }
       }
-      console.log('localStorage.token:', localStorage.getItem('token'));
-      console.log('localStorage.role:', localStorage.getItem('role'));
       alert("Login successful");
       if (role === "staff" || role === "clinic_staff") {
         navigate("/staff-dashboard");

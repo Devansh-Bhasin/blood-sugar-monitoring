@@ -15,7 +15,14 @@ const AddReading = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const patientId = localStorage.getItem("patient_id");
+      // Try both patient_id and fallback to JWT decode
+      let patientId = localStorage.getItem("patient_id");
+      if (!patientId && token && token.split('.').length === 3) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          patientId = payload.sub;
+        } catch {}
+      }
       if (!patientId) {
         alert("Patient ID not found. Please log in as a patient.");
         return;
