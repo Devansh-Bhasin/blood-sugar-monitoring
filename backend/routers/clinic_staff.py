@@ -14,7 +14,7 @@ def get_db():
 
 # Dummy token auth for demo (replace with real auth)
 import jwt
-JWT_SECRET = "your-secret-key"  # TODO: Replace with your actual secret key or import from config
+JWT_SECRET = "supersecretkey"  # Must match the value in auth.py
 def get_current_user_id(token: str):
     if not token:
         return None
