@@ -1,3 +1,5 @@
+
+# Specialist-specific appointments endpoint (must be after router and get_db)
 @router.get("/specialist/{specialist_id}", response_model=List[schemas.Appointment])
 def list_appointments_by_specialist(specialist_id: int, db: Session = Depends(get_db)):
     appts = db.query(models.Appointment).filter(models.Appointment.staff_id == specialist_id).all()
