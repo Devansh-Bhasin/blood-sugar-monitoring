@@ -26,6 +26,8 @@ class Appointment(AppointmentBase):
     appointment_id: int
     created_at: datetime.datetime
     updated_at: datetime.datetime
+    patient_name: str = None
+    specialist_name: str = None
     class Config:
         orm_mode = True
 

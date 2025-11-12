@@ -16,6 +16,7 @@ const Navbar = () => {
   ];
   const specialistLinks = [
     { to: "/specialist-dashboard", label: "Dashboard" },
+    { to: "/specialist-appointments", label: "Appointments" },
     { to: "/specialist-profile", label: "Profile" }
   ];
   const staffLinks = [
