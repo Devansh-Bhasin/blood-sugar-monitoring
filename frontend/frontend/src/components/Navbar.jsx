@@ -24,10 +24,8 @@ const Navbar = () => {
     { to: "/staff-appointments", label: "Appointments" },
     { to: "/staff-profile", label: "Profile" }
   ];
-  const adminLinks = [
-    { to: "/admin-dashboard", label: "Dashboard" }
-    // Admin profile removed
-  ];
+  // Admin links removed
+  const adminLinks = [];
   let navLinks = [];
   if (role === "staff" || role === "clinic_staff") {
     navLinks = [...staffLinks];
@@ -36,7 +34,7 @@ const Navbar = () => {
   } else if (role === "specialist") {
     navLinks = [...specialistLinks];
   } else if (role === "admin") {
-    navLinks = [...adminLinks];
+    navLinks = [];
   } else {
     navLinks = [{ to: "/register", label: "Register" }];
   }
