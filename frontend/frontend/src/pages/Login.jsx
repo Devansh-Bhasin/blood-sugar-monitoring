@@ -25,6 +25,10 @@ const Login = () => {
       const res = await api.post("/auth/login", { email, password }, {
         headers: { 'Content-Type': 'application/json' }
       });
+      // Clear all user-related IDs before setting new ones
+      localStorage.removeItem("patient_id");
+      localStorage.removeItem("specialist_id");
+      localStorage.removeItem("staff_id");
       localStorage.setItem("token", res.data.access_token);
       let role = res.data.role ? res.data.role.toLowerCase() : null;
       if (role) {
