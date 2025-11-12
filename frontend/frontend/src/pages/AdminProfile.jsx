@@ -10,7 +10,13 @@ const AdminProfile = () => {
   const [form, setForm] = useState({});
   const navigate = useNavigate();
 
+  // Wait for role to be loaded (null means not loaded yet)
+  if (role === null) {
+    return <div>Loading...</div>;
+  }
+
   useEffect(() => {
+    if (role === null) return; // Don't run until role is loaded
     if (role !== "admin") {
       navigate("/", { replace: true });
       return;
