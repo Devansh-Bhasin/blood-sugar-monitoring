@@ -124,7 +124,7 @@ class Alert(Base):
 class Report(Base):
     __tablename__ = "reports"
     report_id = Column(Integer, primary_key=True, index=True)
-    admin_id = Column(Integer, ForeignKey("users.user_id"))
+    # admin_id removed (was: Column(Integer, ForeignKey("users.user_id")))
     period = Column(String(8), nullable=False)
     period_start = Column(DateTime, nullable=False)
     period_end = Column(DateTime, nullable=False)

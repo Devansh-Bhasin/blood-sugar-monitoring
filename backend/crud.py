@@ -163,7 +163,6 @@ def get_alerts_for_patient(db: Session, patient_id: int):
 # --- Report CRUD ---
 def create_report(db: Session, report: schemas.ReportCreate):
     db_report = models.Report(
-        admin_id=report.admin_id,
         period=report.period,
         period_start=report.period_start,
         period_end=report.period_end,

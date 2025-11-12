@@ -25,7 +25,6 @@ def list_reports(db: Session = Depends(get_db)):
 def create_sample_report(db: Session = Depends(get_db)):
     now = datetime.datetime.utcnow()
     sample_report = schemas.ReportCreate(
-        admin_id=1,
         period="Monthly",
         period_start=now.date(),
         period_end=(now + datetime.timedelta(days=30)).date(),

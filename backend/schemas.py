@@ -204,7 +204,7 @@ class Alert(AlertBase):
 
 # --- Report Schemas ---
 class ReportBase(BaseModel):
-    admin_id: int
+    # admin_id removed
     period: str
     period_start: datetime.date
     period_end: datetime.date
