@@ -23,11 +23,13 @@ from fastapi import Header
 
 @router.get("/me", response_model=schemas.ClinicStaff)
 def get_my_clinic_staff_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
+    print(f"DEBUG /clinic_staff/me Authorization header: {Authorization}")
     user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
-    print(f"DEBUG /clinic_staff/me user_id: {user_id}")
+    print(f"DEBUG /clinic_staff/me parsed user_id: {user_id}")
     staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
     print(f"DEBUG /clinic_staff/me staff query result: {staff}")
     if not staff:
+        print(f"DEBUG /clinic_staff/me: No staff found for user_id {user_id}")
         raise HTTPException(status_code=404, detail="Clinic staff not found")
     return staff
 
@@ -39,12 +41,17 @@ def update_my_clinic_staff_profile(
     Authorization: str = Header(None),
     form: dict = Body(...)
 ):
+    print(f"DEBUG /clinic_staff/me [PUT] Authorization header: {Authorization}")
     user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    print(f"DEBUG /clinic_staff/me [PUT] parsed user_id: {user_id}")
     staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
+    print(f"DEBUG /clinic_staff/me [PUT] staff query result: {staff}")
     if not staff:
+        print(f"DEBUG /clinic_staff/me [PUT]: No staff found for user_id {user_id}")
         raise HTTPException(status_code=404, detail="Clinic staff not found")
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
     if not user:
+        print(f"DEBUG /clinic_staff/me [PUT]: No user found for user_id {user_id}")
         raise HTTPException(status_code=404, detail="User not found")
     # Update allowed fields
     for field in ["full_name", "email", "phone", "profile_image"]:
