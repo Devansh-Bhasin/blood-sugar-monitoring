@@ -24,8 +24,7 @@ const Navbar = () => {
     { to: "/staff-appointments", label: "Appointments" },
     { to: "/staff-profile", label: "Profile" }
   ];
-  // Admin links removed
-  const adminLinks = [];
+  // Admin links fully removed
   let navLinks = [];
   if (role === "staff" || role === "clinic_staff") {
     navLinks = [...staffLinks];
@@ -33,8 +32,7 @@ const Navbar = () => {
     navLinks = [...patientLinks];
   } else if (role === "specialist") {
     navLinks = [...specialistLinks];
-  } else if (role === "admin") {
-    navLinks = [];
+  // No admin role UI
   } else {
     navLinks = [{ to: "/register", label: "Register" }];
   }

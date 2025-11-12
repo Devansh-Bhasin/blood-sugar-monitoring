@@ -1,3 +1,5 @@
+
+import React, { useState } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 
@@ -68,8 +70,6 @@ const Login = () => {
         navigate("/staff-dashboard");
       } else if (role === "specialist") {
         navigate("/specialist-dashboard");
-      } else if (role === "admin") {
-        navigate("/admin-dashboard");
       } else {
         navigate("/patient-dashboard");
       }

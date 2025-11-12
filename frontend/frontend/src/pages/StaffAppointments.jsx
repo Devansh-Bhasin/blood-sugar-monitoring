@@ -12,7 +12,7 @@ const StaffAppointments = () => {
   const [specialists, setSpecialists] = useState([]);
   const [patients, setPatients] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [form, setForm] = useState({ patient_id: "", specialist_id: "", notes: "" });
+  const [form, setForm] = useState({ patient_id: "", staff_id: "", notes: "" });
   const [filterSpecialist, setFilterSpecialist] = useState("");
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const StaffAppointments = () => {
     const fetchAppointments = async () => {
       let url = "/appointments/";
       let params = {};
-      if (filterSpecialist) params.specialist_id = filterSpecialist;
+  if (filterSpecialist) params.staff_id = filterSpecialist;
       const appts = await api.get(url, { params });
       setAppointments(appts.data);
     };
@@ -104,8 +104,8 @@ const StaffAppointments = () => {
             <option value="">Select</option>
             {patients.map(p => <option key={p.patient_id} value={p.patient_id}>{p.user.full_name}</option>)}
           </select>
-          <label style={{ marginLeft: 12 }}>Specialist: </label>
-          <select value={form.specialist_id} onChange={e => setForm(f => ({ ...f, specialist_id: e.target.value }))} required>
+          <label style={{ marginLeft: 12 }}>Staff: </label>
+          <select value={form.staff_id} onChange={e => setForm(f => ({ ...f, staff_id: e.target.value }))} required>
             <option value="">Select</option>
             {specialists.map(s => <option key={s.specialist_id} value={s.specialist_id}>{s.user.full_name}</option>)}
           </select>
