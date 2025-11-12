@@ -13,28 +13,39 @@ const StaffAppointments = () => {
   const [patients, setPatients] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [form, setForm] = useState({ patient_id: "", specialist_id: "", notes: "" });
+  const [filterSpecialist, setFilterSpecialist] = useState("");
 
   useEffect(() => {
-    // Fetch all appointments, specialists, and patients
+    // Fetch specialists and patients
     const fetchData = async () => {
-      const [appts, specs, pats] = await Promise.all([
-        api.get("/appointments/"),
+      const [specs, pats] = await Promise.all([
         api.get("/specialists/"),
         api.get("/patients/")
       ]);
-      setAppointments(appts.data);
       setSpecialists(specs.data);
       setPatients(pats.data);
     };
     fetchData();
   }, []);
 
+  useEffect(() => {
+    // Fetch appointments, optionally filtered by specialist
+    const fetchAppointments = async () => {
+      let url = "/appointments/";
+      let params = {};
+      if (filterSpecialist) params.specialist_id = filterSpecialist;
+      const appts = await api.get(url, { params });
+      setAppointments(appts.data);
+    };
+    fetchAppointments();
+  }, [filterSpecialist]);
+
   // Convert appointments to calendar events
   const events = appointments.map(a => ({
     id: a.appointment_id,
     title: `Patient: ${a.patient_name} | Specialist: ${a.specialist_name}`,
-    start: new Date(a.datetime),
-    end: addDays(new Date(a.datetime), 0.04), // 1 hour slot
+    start: new Date(a.start_time),
+    end: new Date(a.end_time),
     resource: a
   }));
 
@@ -44,14 +55,20 @@ const StaffAppointments = () => {
 
   const handleBook = async e => {
     e.preventDefault();
+    // Default to 1 hour slot
+    const start_time = selectedSlot;
+    const end_time = new Date(new Date(selectedSlot).getTime() + 60 * 60 * 1000);
     await api.post("/appointments/", {
       ...form,
-      datetime: selectedSlot
+      start_time,
+      end_time
     });
     setSelectedSlot(null);
     setForm({ patient_id: "", specialist_id: "", notes: "" });
     // Refresh appointments
-    const appts = await api.get("/appointments/");
+    let params = {};
+    if (filterSpecialist) params.specialist_id = filterSpecialist;
+    const appts = await api.get("/appointments/", { params });
     setAppointments(appts.data);
   };
 
@@ -63,6 +80,13 @@ const StaffAppointments = () => {
   return (
     <div style={{ padding: 24 }}>
       <h2>Manage Appointments</h2>
+      <div style={{ marginBottom: 16 }}>
+        <label>Filter by Specialist: </label>
+        <select value={filterSpecialist} onChange={e => setFilterSpecialist(e.target.value)}>
+          <option value="">All</option>
+          {specialists.map(s => <option key={s.specialist_id} value={s.specialist_id}>{s.user.full_name}</option>)}
+        </select>
+      </div>
       <Calendar
         localizer={localizer}
         events={events}
