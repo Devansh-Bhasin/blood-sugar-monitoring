@@ -13,11 +13,20 @@ def get_db():
         db.close()
 
 # Dummy token auth for demo (replace with real auth)
+import jwt
+JWT_SECRET = "your-secret-key"  # TODO: Replace with your actual secret key or import from config
 def get_current_user_id(token: str):
-    # token format: token-<user_id>
-    if token and token.startswith("token-"):
-        return int(token.split("-")[1])
-    return None
+    if not token:
+        return None
+    try:
+        # Remove 'Bearer ' if present
+        if token.startswith("Bearer "):
+            token = token[len("Bearer "):]
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        return int(payload.get("sub"))
+    except Exception as e:
+        print(f"JWT decode error: {e}")
+        return None
 
 from fastapi import Header
 
