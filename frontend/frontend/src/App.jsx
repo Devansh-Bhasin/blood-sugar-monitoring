@@ -15,6 +15,7 @@ import SpecialistProfile from "./pages/SpecialistProfile";
 import StaffProfile from "./pages/StaffProfile";
 import AddReading from "./pages/AddReading";
 import Alerts from "./pages/Alerts";
+import StaffAppointments from "./pages/StaffAppointments";
 
 const App = () => (
   <AuthProvider>
@@ -33,6 +34,7 @@ const App = () => (
       <Route path="/patient-profile" element={<PatientProfile />} />
       <Route path="/specialist-profile" element={<SpecialistProfile />} />
       <Route path="/staff-profile" element={<StaffProfile />} />
+      <Route path="/staff-appointments" element={<StaffAppointments />} />
       {/* Catch-all route for 404s */}
       <Route path="*" element={<Register />} />
     </Routes>

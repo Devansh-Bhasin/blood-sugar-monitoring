@@ -2,6 +2,7 @@
 from sqlalchemy import Column, Integer, String, Float, ForeignKey, DateTime, Table, Text, Numeric, Boolean
 from sqlalchemy.orm import relationship
 from .models_specialist_patient import SpecialistPatient
+from .models_appointment import Appointment
 from .database import Base
 import datetime
 

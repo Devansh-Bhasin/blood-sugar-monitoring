@@ -20,6 +20,7 @@ const Navbar = () => {
   ];
   const staffLinks = [
     { to: "/staff-dashboard", label: "Dashboard" },
+    { to: "/staff-appointments", label: "Appointments" },
     { to: "/staff-profile", label: "Profile" }
   ];
   const adminLinks = [

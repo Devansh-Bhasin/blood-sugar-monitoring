@@ -14,7 +14,7 @@ app.add_middleware(
 
 
 from backend.database import Base, engine
-from backend.routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient
+from backend.routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient, appointments
 
 from fastapi.responses import Response
 @app.options("/auth/login")
@@ -37,6 +37,7 @@ app.include_router(alerts.router, prefix=api_prefix)
 app.include_router(reports.router, prefix=api_prefix)
 app.include_router(auth.router, prefix=api_prefix)
 app.include_router(specialist_patient.router, prefix=api_prefix)
+app.include_router(appointments.router, prefix=api_prefix)
 
 @app.get("/")
 def read_root():
