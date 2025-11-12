@@ -25,8 +25,8 @@ const Navbar = () => {
     { to: "/staff-profile", label: "Profile" }
   ];
   const adminLinks = [
-    { to: "/admin-dashboard", label: "Dashboard" },
-    { to: "/admin-profile", label: "Profile" }
+    { to: "/admin-dashboard", label: "Dashboard" }
+    // Admin profile removed
   ];
   let navLinks = [];
   if (role === "staff" || role === "clinic_staff") {
