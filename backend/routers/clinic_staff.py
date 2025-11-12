@@ -24,7 +24,9 @@ from fastapi import Header
 @router.get("/me", response_model=schemas.ClinicStaff)
 def get_my_clinic_staff_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
     user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    print(f"DEBUG /clinic_staff/me user_id: {user_id}")
     staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
+    print(f"DEBUG /clinic_staff/me staff query result: {staff}")
     if not staff:
         raise HTTPException(status_code=404, detail="Clinic staff not found")
     return staff
