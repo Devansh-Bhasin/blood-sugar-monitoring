@@ -1,3 +1,7 @@
+from pydantic import BaseModel, EmailStr
+from typing import List, Optional
+import datetime
+
 # --- Appointment Schemas ---
 class AppointmentBase(BaseModel):
     patient_id: int
