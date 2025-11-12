@@ -1,26 +1,30 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
+import { useAuth } from "../context/AuthContext";
 
 const AdminProfile = () => {
+  const { role } = useAuth();
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await api.get("/users/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProfile(res.data);
-        setForm(res.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchProfile();
-  }, []);
+    if (role === "admin") {
+      const fetchProfile = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          const res = await api.get("/users/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setProfile(res.data);
+          setForm(res.data);
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      fetchProfile();
+    }
+  }, [role]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
