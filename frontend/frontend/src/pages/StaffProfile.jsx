@@ -10,7 +10,7 @@ const StaffProfile = () => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await api.get("/users/me", {
+        const res = await api.get("/clinic_staff/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(res.data);
@@ -29,7 +29,7 @@ const StaffProfile = () => {
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
-      await api.put("/users/me", form, {
+      await api.put("/clinic_staff/me", form, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert("Profile updated");
