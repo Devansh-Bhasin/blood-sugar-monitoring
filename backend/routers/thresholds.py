@@ -5,6 +5,7 @@ from backend.database import SessionLocal
 
 router = APIRouter(prefix="/thresholds", tags=["thresholds"])
 
+from backend.database import SessionLocal
 def get_db():
     db = SessionLocal()
     try:

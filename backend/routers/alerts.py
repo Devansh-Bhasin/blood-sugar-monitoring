@@ -8,6 +8,7 @@ from backend.utils_email import send_email_alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
+from backend.database import SessionLocal
 def get_db():
     db = SessionLocal()
     try:

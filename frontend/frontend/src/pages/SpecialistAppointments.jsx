@@ -10,6 +10,7 @@ const localizer = momentLocalizer(moment);
 const SpecialistAppointments = () => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -41,7 +42,22 @@ const SpecialistAppointments = () => {
           startAccessor="start"
           endAccessor="end"
           style={{ height: 600, margin: "40px 0" }}
+          onSelectEvent={event => setSelectedEvent(event.resource)}
         />
+      )}
+      {selectedEvent && (
+        <div style={{ position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh", background: "rgba(0,0,0,0.3)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }} onClick={() => setSelectedEvent(null)}>
+          <div style={{ background: "#fff", borderRadius: 10, padding: 24, minWidth: 320, maxWidth: 400, boxShadow: "0 2px 16px rgba(0,0,0,0.15)" }} onClick={e => e.stopPropagation()}>
+            <h3>Appointment Details</h3>
+            <div><b>Patient:</b> {selectedEvent.patient_name}</div>
+            <div><b>Specialist:</b> {selectedEvent.specialist_name}</div>
+            <div><b>Start:</b> {new Date(selectedEvent.start_time).toLocaleString()}</div>
+            <div><b>End:</b> {new Date(selectedEvent.end_time).toLocaleString()}</div>
+            <div><b>Reason:</b> {selectedEvent.reason}</div>
+            <div><b>Status:</b> {selectedEvent.status}</div>
+            <button style={{ marginTop: 16 }} onClick={() => setSelectedEvent(null)}>Close</button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -23,8 +23,9 @@ router = APIRouter(
     tags=["appointments"]
 )
 
+from backend.database import SessionLocal
 def get_db():
-    db = database.SessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:

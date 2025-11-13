@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import crud, schemas
-from backend.database import SessionLocal
+
 
 router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
 
+from backend.database import SessionLocal
 def get_db():
     db = SessionLocal()
     try:

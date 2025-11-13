@@ -7,6 +7,7 @@ from backend.database import SessionLocal
 
 router = APIRouter(prefix="/specialists", tags=["specialists"])
 
+from backend.database import SessionLocal
 def get_db():
     db = SessionLocal()
     try:

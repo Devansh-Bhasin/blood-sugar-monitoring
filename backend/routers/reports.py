@@ -6,6 +6,7 @@ import datetime
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
+from backend.database import SessionLocal
 def get_db():
     db = SessionLocal()
     try:

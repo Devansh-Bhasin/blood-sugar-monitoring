@@ -45,7 +45,18 @@ const Login = () => {
           if (role === "patient") {
             localStorage.setItem("patient_id", userId);
           } else if (role === "specialist") {
-            localStorage.setItem("specialist_id", userId);
+            // Fetch the real specialist_id from /specialists/me
+            try {
+              const token = res.data.access_token;
+              const specRes = await api.get("/specialists/me", { headers: { Authorization: `Bearer ${token}` } });
+              if (specRes.data && specRes.data.specialist_id) {
+                localStorage.setItem("specialist_id", specRes.data.specialist_id);
+              } else {
+                localStorage.setItem("specialist_id", userId); // fallback
+              }
+            } catch (e) {
+              localStorage.setItem("specialist_id", userId); // fallback
+            }
           } else if (role === "staff" || role === "clinic_staff") {
             // Fetch the real staff_id from /clinic_staff/me
             try {

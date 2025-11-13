@@ -7,8 +7,9 @@ router = APIRouter(prefix="/specialist_patient", tags=["specialist_patient"])
 
 # Dependency
 
+from backend.database import SessionLocal
 def get_db():
-    db = database.SessionLocal()
+    db = SessionLocal()
     try:
         yield db
     finally:
