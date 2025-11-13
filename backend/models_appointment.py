@@ -8,6 +8,7 @@ class Appointment(Base):
     appointment_id = Column(Integer, primary_key=True, index=True)
     patient_id = Column(Integer, ForeignKey("patients.patient_id"), nullable=False)
     staff_id = Column(Integer, ForeignKey("clinic_staff.staff_id"), nullable=False)
+    specialist_id = Column(Integer, ForeignKey("specialists.specialist_id"), nullable=False)
     start_time = Column(DateTime, nullable=False)
     end_time = Column(DateTime, nullable=False)
     reason = Column(String(255))
@@ -18,3 +19,4 @@ class Appointment(Base):
 
     patient = relationship("Patient")
     staff = relationship("ClinicStaff")
+    specialist = relationship("Specialist")

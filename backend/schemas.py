@@ -6,6 +6,7 @@ import datetime
 class AppointmentBase(BaseModel):
     patient_id: int
     staff_id: int
+    specialist_id: int
     start_time: datetime.datetime
     end_time: datetime.datetime
     reason: Optional[str] = None
@@ -21,6 +22,7 @@ class AppointmentUpdate(BaseModel):
     reason: Optional[str] = None
     notes: Optional[str] = None
     status: Optional[str] = None
+    specialist_id: Optional[int] = None
 
 class Appointment(AppointmentBase):
     appointment_id: int
@@ -28,6 +30,7 @@ class Appointment(AppointmentBase):
     updated_at: datetime.datetime
     patient_name: str = None
     specialist_name: str = None
+    specialist_id: int
     class Config:
         orm_mode = True
 

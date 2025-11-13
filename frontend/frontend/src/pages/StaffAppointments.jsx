@@ -37,11 +37,11 @@ const StaffAppointments = () => {
   useEffect(() => {
     // Fetch appointments, optionally filtered by specialist
     const fetchAppointments = async () => {
-      let url = "/appointments/";
-      let params = {};
-  if (filterSpecialist) params.staff_id = filterSpecialist;
-      const appts = await api.get(url, { params });
-      setAppointments(appts.data);
+    let url = "/appointments/";
+    let params = {};
+    if (filterSpecialist) params.specialist_id = filterSpecialist;
+    const appts = await api.get(url, { params });
+    setAppointments(appts.data);
     };
     fetchAppointments();
   }, [filterSpecialist]);
@@ -126,6 +126,7 @@ const StaffAppointments = () => {
             await api.post("/appointments/", {
               ...form,
               staff_id: localStorage.getItem("staff_id"),
+              specialist_id: form.specialist_id,
               start_time: form.start_time,
               end_time: form.end_time
             });
@@ -180,7 +181,7 @@ const StaffAppointments = () => {
             <div><b>Specialist:</b> {selectedEvent.specialist_name}</div>
             <div><b>Start:</b> {new Date(selectedEvent.start_time).toLocaleString()}</div>
             <div><b>End:</b> {new Date(selectedEvent.end_time).toLocaleString()}</div>
-            <div><b>Reason:</b> {selectedEvent.notes}</div>
+            <div><b>Reason:</b> {selectedEvent.reason}</div>
             <div><b>Status:</b> {selectedEvent.status}</div>
             <button style={{ marginTop: 16, marginRight: 8 }} onClick={() => setEditEvent(selectedEvent)}>Edit</button>
             <button style={{ marginTop: 16, marginRight: 8, background: '#e74c3c', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 14px' }}
@@ -208,8 +209,10 @@ const StaffAppointments = () => {
                 await api.put(`/appointments/${editEvent.appointment_id}`, {
                   patient_id: editEvent.patient_id,
                   staff_id: editEvent.staff_id,
+                  specialist_id: editEvent.specialist_id,
                   start_time: editEvent.start_time,
                   end_time: editEvent.end_time,
+                  reason: editEvent.reason,
                   notes: editEvent.notes,
                   status: editEvent.status
                 });
@@ -228,7 +231,7 @@ const StaffAppointments = () => {
                 {patients.map(p => <option key={p.patient_id} value={p.patient_id}>{p.user.full_name}</option>)}
               </select>
               <label style={{ marginLeft: 12 }}>Specialist: </label>
-              <select value={editEvent.staff_id} onChange={e => setEditEvent(ev => ({ ...ev, staff_id: e.target.value }))} required>
+              <select value={editEvent.specialist_id} onChange={e => setEditEvent(ev => ({ ...ev, specialist_id: e.target.value }))} required>
                 <option value="">Select</option>
                 {specialists.map(s => <option key={s.specialist_id} value={s.specialist_id}>{s.user.full_name}</option>)}
               </select>
@@ -244,7 +247,7 @@ const StaffAppointments = () => {
               <label style={{ marginLeft: 12 }}>End Time: </label>
               <input type="datetime-local" value={editEvent.end_time?.slice(0,16)} onChange={e => setEditEvent(ev => ({ ...ev, end_time: e.target.value }))} required />
               <label style={{ marginLeft: 12 }}>Reason: </label>
-              <input value={editEvent.notes} onChange={e => setEditEvent(ev => ({ ...ev, notes: e.target.value }))} style={{ width: 180 }} required />
+              <input value={editEvent.reason} onChange={e => setEditEvent(ev => ({ ...ev, reason: e.target.value }))} style={{ width: 180 }} required />
               <label style={{ marginLeft: 12 }}>Status: </label>
               <select value={editEvent.status} onChange={e => setEditEvent(ev => ({ ...ev, status: e.target.value }))}>
                 <option value="scheduled">Scheduled</option>
