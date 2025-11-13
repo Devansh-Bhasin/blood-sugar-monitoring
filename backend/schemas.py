@@ -8,7 +8,7 @@ class AppointmentBase(BaseModel):
     staff_id: int
     start_time: datetime.datetime
     end_time: datetime.datetime
-    reason: str = None
+    reason: Optional[str] = None
     notes: str = None
     status: str = "scheduled"
 
@@ -16,11 +16,11 @@ class AppointmentCreate(AppointmentBase):
     pass
 
 class AppointmentUpdate(BaseModel):
-    start_time: datetime.datetime = None
-    end_time: datetime.datetime = None
-    reason: str = None
-    notes: str = None
-    status: str = None
+    start_time: Optional[datetime.datetime] = None
+    end_time: Optional[datetime.datetime] = None
+    reason: Optional[str] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None
 
 class Appointment(AppointmentBase):
     appointment_id: int
