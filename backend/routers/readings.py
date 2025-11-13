@@ -14,36 +14,34 @@ def get_db():
 
 # Helper for categorization
 
-def categorize_reading(value, unit):
-    # Example thresholds (can be made dynamic)
-    def categorize_reading(value, unit, patient_id=None, db=None):
-        threshold = None
-        if db is not None and patient_id is not None:
-            threshold = db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == patient_id).first()
-        if unit == "mg_dL":
-            min_normal = float(threshold.min_normal) if threshold else 70
-            max_normal = float(threshold.max_normal) if threshold else 140
-            max_borderline = float(threshold.max_borderline) if threshold else 180
-            if value < min_normal:
-                return "Abnormal"
-            elif min_normal <= value <= max_normal:
-                return "Normal"
-            elif max_normal < value <= max_borderline:
-                return "Borderline"
-            else:
-                return "Abnormal"
-        else:  # mmol_L
-            min_normal = float(threshold.min_normal) if threshold else 4
-            max_normal = float(threshold.max_normal) if threshold else 7.8
-            max_borderline = float(threshold.max_borderline) if threshold else 10
-            if value < min_normal:
-                return "Abnormal"
-            elif min_normal <= value <= max_normal:
-                return "Normal"
-            elif max_normal < value <= max_borderline:
-                return "Borderline"
-            else:
-                return "Abnormal"
+def categorize_reading(value, unit, patient_id=None, db=None):
+    threshold = None
+    if db is not None and patient_id is not None:
+        threshold = db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == patient_id).first()
+    if unit == "mg_dL":
+        min_normal = float(threshold.min_normal) if threshold else 70
+        max_normal = float(threshold.max_normal) if threshold else 140
+        max_borderline = float(threshold.max_borderline) if threshold else 180
+        if value < min_normal:
+            return "Abnormal"
+        elif min_normal <= value <= max_normal:
+            return "Normal"
+        elif max_normal < value <= max_borderline:
+            return "Borderline"
+        else:
+            return "Abnormal"
+    else:  # mmol_L
+        min_normal = float(threshold.min_normal) if threshold else 4
+        max_normal = float(threshold.max_normal) if threshold else 7.8
+        max_borderline = float(threshold.max_borderline) if threshold else 10
+        if value < min_normal:
+            return "Abnormal"
+        elif min_normal <= value <= max_normal:
+            return "Normal"
+        elif max_normal < value <= max_borderline:
+            return "Borderline"
+        else:
+            return "Abnormal"
 
 @router.post("/", response_model=schemas.Reading)
 def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)):
