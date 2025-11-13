@@ -47,7 +47,18 @@ const Login = () => {
           } else if (role === "specialist") {
             localStorage.setItem("specialist_id", userId);
           } else if (role === "staff" || role === "clinic_staff") {
-            localStorage.setItem("staff_id", userId);
+            // Fetch the real staff_id from /clinic_staff/me
+            try {
+              const token = res.data.access_token;
+              const staffRes = await api.get("/clinic_staff/me", { headers: { Authorization: `Bearer ${token}` } });
+              if (staffRes.data && staffRes.data.staff_id) {
+                localStorage.setItem("staff_id", staffRes.data.staff_id);
+              } else {
+                localStorage.setItem("staff_id", userId); // fallback
+              }
+            } catch (e) {
+              localStorage.setItem("staff_id", userId); // fallback
+            }
           }
         }
       } else if (res.data.role) {

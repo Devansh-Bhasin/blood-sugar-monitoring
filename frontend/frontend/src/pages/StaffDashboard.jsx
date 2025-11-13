@@ -23,6 +23,10 @@ const StaffDashboard = () => {
   const [maxNormal, setMaxNormal] = useState(130);
   const [maxBorderline, setMaxBorderline] = useState(180);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showApptForm, setShowApptForm] = useState({}); // { patient_id: bool }
+  const [apptForm, setApptForm] = useState({}); // { patient_id: { specialist_id, start_time, end_time, reason, notes } }
+  const [apptLoading, setApptLoading] = useState({});
+  const [apptError, setApptError] = useState({});
 
   useEffect(() => {
     const fetchPatients = async () => {
@@ -95,7 +99,7 @@ const StaffDashboard = () => {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", justifyContent: "center" }}>
         {filteredPatients.map((p) => (
-          <div key={p.patient_id} style={{ background: "#fff", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)", padding: "1.5rem", minWidth: 320, maxWidth: 360, flex: "1 1 340px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div key={p.patient_id} style={{ background: "#fff", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)", padding: "1.5rem", minWidth: 320, maxWidth: 360, flex: "1 1 340px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
             {assignments[p.patient_id]?.error && (
               <div style={{ color: 'red', marginBottom: '0.5rem', fontWeight: 500 }}>
                 {Array.isArray(assignments[p.patient_id].error)

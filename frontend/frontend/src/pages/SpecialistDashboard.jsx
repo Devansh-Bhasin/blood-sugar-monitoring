@@ -10,28 +10,52 @@ const SpecialistDashboard = () => {
     }
   }, []);
   const [patients, setPatients] = useState([]);
-  const [selectedPatient, setSelectedPatient] = useState(null);
-  const [readings, setReadings] = useState([]);
-  const [feedbackText, setFeedbackText] = useState("");
-  const [selectedReadingId, setSelectedReadingId] = useState(null);
-  const [feedbacks, setFeedbacks] = useState([]);
+  const [patientReadings, setPatientReadings] = useState({}); // { patient_id: [readings] }
+  const [patientFeedbacks, setPatientFeedbacks] = useState({}); // { patient_id: [feedbacks] }
+  const [feedbackText, setFeedbackText] = useState({}); // { patient_id: text }
+  const [editingFeedbackId, setEditingFeedbackId] = useState(null);
+  const [editingFeedbackText, setEditingFeedbackText] = useState("");
+  const [expandedReadings, setExpandedReadings] = useState({}); // { patient_id: bool }
+  const [expandedFeedback, setExpandedFeedback] = useState({}); // { patient_id: bool }
+  const [showFeedbackInput, setShowFeedbackInput] = useState({}); // { patient_id: reading_id }
+  const [viewLog, setViewLog] = useState({}); // { patient_id: reading_id or feedback_id }
   const [filter, setFilter] = useState({ startDate: "", endDate: "", category: "", patientName: "" });
 
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        // Use the new endpoint to get only assigned patients
         const token = localStorage.getItem("token");
         const res = await api.get("/specialists/patients", {
           headers: { Authorization: `Bearer ${token}` }
         });
         setPatients(res.data);
+        // For each patient, fetch readings and feedbacks
+        for (const p of res.data) {
+          fetchReadingsAndFeedbacks(p.patient_id);
+        }
       } catch (err) {
         console.error(err);
       }
     };
     fetchPatients();
+    // eslint-disable-next-line
   }, []);
+
+  const fetchReadingsAndFeedbacks = async (patientId) => {
+    try {
+      let url = `/readings/patient/${patientId}`;
+      let params = {};
+      if (filter.startDate) params.startDate = filter.startDate;
+      if (filter.endDate) params.endDate = filter.endDate;
+      if (filter.category) params.category = filter.category;
+      const res = await api.get(url, { params });
+      setPatientReadings(prev => ({ ...prev, [patientId]: res.data }));
+      const fbRes = await api.get(`/feedback/patient/${patientId}`);
+      setPatientFeedbacks(prev => ({ ...prev, [patientId]: fbRes.data }));
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fetchReadingsForPatient = async (patientId) => {
     try {
@@ -59,113 +83,155 @@ const SpecialistDashboard = () => {
     }
   };
 
-  const handleFeedbackSubmit = async () => {
-    if (!feedbackText || !selectedPatient || !selectedReadingId) return;
+  const handleFeedbackSubmit = async (patientId, readingId) => {
+    const text = feedbackText[patientId];
+    if (!text || !patientId || !readingId) return;
     try {
-      // Assume specialist_id is stored in localStorage after login
       const specialistId = localStorage.getItem("specialist_id");
+      const token = localStorage.getItem("token");
       if (!specialistId) return alert("Specialist ID missing");
-      await api.post("/feedback/", {
-        specialist_id: parseInt(specialistId),
-        patient_id: selectedPatient,
-        reading_id: selectedReadingId,
-        comments: feedbackText,
-      });
-      setFeedbackText("");
-      setSelectedReadingId(null);
-      // Refresh feedbacks
-      const fbRes = await api.get(`/feedback/patient/${selectedPatient}`);
-      setFeedbacks(fbRes.data);
+      if (!token) return alert("Not authenticated");
+      await api.post(
+        "/feedback/",
+        {
+          specialist_id: parseInt(specialistId),
+          patient_id: patientId,
+          reading_id: readingId,
+          comments: text,
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setFeedbackText(prev => ({ ...prev, [patientId]: "" }));
+      fetchReadingsAndFeedbacks(patientId);
     } catch (err) {
       alert("Failed to submit feedback.");
     }
   };
 
+  const handleEditFeedback = (fb) => {
+    setEditingFeedbackId(fb.feedback_id);
+    setEditingFeedbackText(fb.comments);
+  };
+
+  const handleUpdateFeedback = async (fb, patientId) => {
+    try {
+      const token = localStorage.getItem("token");
+      await api.put(
+        `/feedback/${fb.feedback_id}`,
+        { comments: editingFeedbackText },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setEditingFeedbackId(null);
+      setEditingFeedbackText("");
+      fetchReadingsAndFeedbacks(patientId);
+    } catch (err) {
+      alert("Failed to update feedback.");
+    }
+  };
+
   return (
     <div style={{ padding: "2rem", display: "flex", flexDirection: "column", alignItems: "center" }}>
-      <div style={{ maxWidth: 700, width: "100%", background: "#fff", borderRadius: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.08)", padding: "2rem", marginBottom: "2rem" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Patients Overview</h2>
+      <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Patients Overview</h2>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
         {patients.map((p) => (
-          <div key={p.patient_id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, margin: "1rem 0", padding: "1rem", background: "#f9f9f9" }}>
+          <div key={p.patient_id} style={{ border: "1px solid #e0e0e0", borderRadius: 12, width: 340, background: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", padding: "1.2rem", marginBottom: "2rem", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
             <p><b>Name:</b> {p.user.full_name}</p>
             <p><b>Email:</b> {p.user.email}</p>
             <p><b>Health Care #:</b> {p.health_care_number}</p>
             <p><b>Date of Birth:</b> {p.date_of_birth}</p>
-            <button onClick={() => fetchReadingsForPatient(p.patient_id)} style={{ padding: "0.5rem 1rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }}>
-              View Readings
-            </button>
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button onClick={() => setExpandedReadings(prev => ({ ...prev, [p.patient_id]: !prev[p.patient_id] }))} style={{ padding: "0.3rem 0.8rem", borderRadius: 6, background: expandedReadings[p.patient_id] ? "#1976d2" : "#e0e0e0", color: expandedReadings[p.patient_id] ? "#fff" : "#222", border: "none" }}>{expandedReadings[p.patient_id] ? "Hide Readings" : "View Readings"}</button>
+              <button onClick={() => setExpandedFeedback(prev => ({ ...prev, [p.patient_id]: !prev[p.patient_id] }))} style={{ padding: "0.3rem 0.8rem", borderRadius: 6, background: expandedFeedback[p.patient_id] ? "#1976d2" : "#e0e0e0", color: expandedFeedback[p.patient_id] ? "#fff" : "#222", border: "none" }}>{expandedFeedback[p.patient_id] ? "Hide Feedback" : "View Feedback"}</button>
+            </div>
+            {/* Readings Section */}
+            {expandedReadings[p.patient_id] && (
+              <div style={{ marginTop: 10, width: "100%" }}>
+                <h4 style={{ margin: 0 }}>Readings</h4>
+                {(patientReadings[p.patient_id] && patientReadings[p.patient_id].length > 0) ? (
+                  patientReadings[p.patient_id].map((r) => (
+                    <div key={r.reading_id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, margin: "0.5rem 0", padding: "0.5rem", background: "#f5f5f5", position: "relative" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span><b>Date:</b> {new Date(r.timestamp).toLocaleString()}</span>
+                        <button onClick={() => setViewLog({ [p.patient_id]: r.reading_id })} style={{ fontSize: 12, background: "#e0e0e0", border: "none", borderRadius: 4, padding: "0.2rem 0.6rem", marginLeft: 8 }}>View Log</button>
+                      </div>
+                      {viewLog[p.patient_id] === r.reading_id ? (
+                        <div style={{ marginTop: 6, fontSize: 14 }}>
+                          <p><b>Value:</b> {r.value} {r.unit}</p>
+                          <p><b>Category:</b> {r.category}</p>
+                          <p><b>Food:</b> {r.food_intake}</p>
+                          <p><b>Activities:</b> {r.activities}</p>
+                          <p><b>Notes:</b> {r.notes}</p>
+                          <button onClick={() => setViewLog({})} style={{ fontSize: 12, background: "#e53935", color: "#fff", border: "none", borderRadius: 4, padding: "0.2rem 0.6rem", marginTop: 4 }}>Close</button>
+                        </div>
+                      ) : null}
+                      <div style={{ marginTop: 6 }}>
+                        <button onClick={() => setShowFeedbackInput(prev => ({ ...prev, [p.patient_id]: r.reading_id }))} style={{ fontSize: 12, background: "#43a047", color: "#fff", border: "none", borderRadius: 4, padding: "0.2rem 0.7rem" }}>Provide Feedback</button>
+                        {showFeedbackInput[p.patient_id] === r.reading_id && (
+                          <div style={{ marginTop: 6 }}>
+                            <textarea
+                              value={feedbackText[p.patient_id] || ""}
+                              onChange={e => setFeedbackText(prev => ({ ...prev, [p.patient_id]: e.target.value }))}
+                              rows={2}
+                              style={{ width: "100%", borderRadius: 6, border: "1px solid #ccc", padding: "0.5rem" }}
+                              placeholder="Enter feedback/comments"
+                            />
+                            <button onClick={() => handleFeedbackSubmit(p.patient_id, r.reading_id)} style={{ marginTop: 4, padding: "0.3rem 0.8rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }}>Submit Feedback</button>
+                            <button onClick={() => setShowFeedbackInput(prev => ({ ...prev, [p.patient_id]: null }))} style={{ marginLeft: 6, marginTop: 4, padding: "0.3rem 0.8rem", borderRadius: 6, background: "#e0e0e0", color: "#222", border: "none" }}>Cancel</button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p>No readings found.</p>
+                )}
+              </div>
+            )}
+            {/* Feedback Section */}
+            {expandedFeedback[p.patient_id] && (
+              <div style={{ marginTop: 10, width: "100%" }}>
+                <h4 style={{ margin: 0 }}>Feedback</h4>
+                {(patientFeedbacks[p.patient_id] && patientFeedbacks[p.patient_id].length > 0) ? (
+                  patientFeedbacks[p.patient_id].map(fb => (
+                    <div key={fb.feedback_id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, margin: "0.5rem 0", padding: "0.5rem", background: "#e3f2fd", position: "relative" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span><b>Reading:</b> {fb.reading_id}</span>
+                        <button onClick={() => setViewLog({ [p.patient_id]: fb.feedback_id })} style={{ fontSize: 12, background: "#e0e0e0", border: "none", borderRadius: 4, padding: "0.2rem 0.6rem", marginLeft: 8 }}>View Log</button>
+                      </div>
+                      {viewLog[p.patient_id] === fb.feedback_id ? (
+                        <div style={{ marginTop: 6, fontSize: 14 }}>
+                          <p><b>Specialist:</b> {fb.specialist_id}</p>
+                          <p><b>Comments:</b> {editingFeedbackId === fb.feedback_id ? (
+                            <>
+                              <textarea
+                                value={editingFeedbackText}
+                                onChange={e => setEditingFeedbackText(e.target.value)}
+                                rows={2}
+                                style={{ width: "100%", borderRadius: 6, border: "1px solid #ccc", padding: "0.5rem" }}
+                              />
+                              <button onClick={() => handleUpdateFeedback(fb, p.patient_id)} style={{ marginTop: 4, marginRight: 8, padding: "0.3rem 0.8rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }}>Save</button>
+                              <button onClick={() => setEditingFeedbackId(null)} style={{ marginTop: 4, padding: "0.3rem 0.8rem", borderRadius: 6, background: "#e53935", color: "#fff", border: "none" }}>Cancel</button>
+                            </>
+                          ) : (
+                            <>
+                              <span>{fb.comments}</span>
+                              <button onClick={() => handleEditFeedback(fb)} style={{ marginLeft: 8, padding: "0.2rem 0.7rem", borderRadius: 6, background: "#ffb300", color: "#222", border: "none" }}>Edit</button>
+                            </>
+                          )}</p>
+                          <div style={{ fontSize: 12, color: "#555" }}>on {new Date(fb.created_at).toLocaleString()}</div>
+                          <button onClick={() => setViewLog({})} style={{ fontSize: 12, background: "#e53935", color: "#fff", border: "none", borderRadius: 4, padding: "0.2rem 0.6rem", marginTop: 4 }}>Close</button>
+                        </div>
+                      ) : null}
+                    </div>
+                  ))
+                ) : (
+                  <p>No feedback yet.</p>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
-      {selectedPatient && (
-        <div style={{ maxWidth: 700, width: "100%", background: "#fff", borderRadius: 12, boxShadow: "0 2px 12px rgba(0,0,0,0.08)", padding: "2rem", marginBottom: "2rem" }}>
-          <h3 style={{ marginBottom: "1rem" }}>Readings for Patient #{selectedPatient}</h3>
-          <div style={{ marginBottom: "1rem", display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-            <label>Start Date: <input type="date" value={filter.startDate} onChange={e => setFilter({ ...filter, startDate: e.target.value })} /></label>
-            <label>End Date: <input type="date" value={filter.endDate} onChange={e => setFilter({ ...filter, endDate: e.target.value })} /></label>
-            <label>Category:
-              <select value={filter.category} onChange={e => setFilter({ ...filter, category: e.target.value })}>
-                <option value="">All</option>
-                <option value="Normal">Normal</option>
-                <option value="Borderline">Borderline</option>
-                <option value="Abnormal">Abnormal</option>
-              </select>
-            </label>
-            <label>Patient Name: <input value={filter.patientName} onChange={e => setFilter({ ...filter, patientName: e.target.value })} /></label>
-            <button style={{ marginLeft: "1rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }} onClick={() => fetchReadingsForPatient(selectedPatient)}>Apply Filter</button>
-          </div>
-          {readings.length === 0 ? (
-            <p>No readings found.</p>
-          ) : (
-            readings.map((r) => (
-              <div key={r.reading_id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, margin: "0.5rem 0", padding: "1rem", background: "#f5f5f5" }}>
-                <p><b>Date:</b> {new Date(r.timestamp).toLocaleString()}</p>
-                <p><b>Value:</b> {r.value} {r.unit}</p>
-                <p><b>Category:</b> {r.category}</p>
-                <p><b>Food:</b> {r.food_intake}</p>
-                <p><b>Activities:</b> {r.activities}</p>
-                <p><b>Notes:</b> {r.notes}</p>
-                <button onClick={() => setSelectedReadingId(r.reading_id)} style={{ padding: "0.5rem 1rem", borderRadius: 6, background: "#43a047", color: "#fff", border: "none" }}>
-                  Provide Feedback
-                </button>
-              </div>
-            ))
-          )}
-          {selectedReadingId && (
-            <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #1976d2", borderRadius: 8, background: "#e3f2fd" }}>
-              <h4>Submit Feedback for Reading #{selectedReadingId}</h4>
-              <textarea
-                value={feedbackText}
-                onChange={e => setFeedbackText(e.target.value)}
-                rows={3}
-                style={{ width: "100%", borderRadius: 6, border: "1px solid #ccc", padding: "0.5rem" }}
-                placeholder="Enter feedback/comments"
-              />
-              <button onClick={handleFeedbackSubmit} style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }}>
-                Submit Feedback
-              </button>
-              <button onClick={() => setSelectedReadingId(null)} style={{ marginLeft: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#e53935", color: "#fff", border: "none" }}>
-                Cancel
-              </button>
-            </div>
-          )}
-          <div style={{ marginTop: "2rem" }}>
-            <h4>Previous Feedback for Patient</h4>
-            {feedbacks.length === 0 ? (
-              <p>No feedback yet.</p>
-            ) : (
-              feedbacks.map(fb => (
-                <div key={fb.feedback_id} style={{ border: "1px solid #e0e0e0", borderRadius: 8, margin: "0.5rem 0", padding: "1rem", background: "#f5f5f5" }}>
-                  <p><b>Specialist:</b> {fb.specialist_id}</p>
-                  <p><b>Reading:</b> {fb.reading_id}</p>
-                  <p><b>Comments:</b> {fb.comments}</p>
-                  <p><b>Date:</b> {new Date(fb.created_at).toLocaleString()}</p>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
