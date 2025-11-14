@@ -227,6 +227,7 @@ class Report(ReportBase):
 class PasswordUpdate(BaseModel):
     current_password: str
     new_password: str
+    user_email: EmailStr
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr

@@ -69,8 +69,8 @@ async def login(request: Request, data: LoginRequest):
 
 # --- Password Change Endpoint ---
 @router.post("/change-password")
-def change_password(data: schemas.PasswordUpdate, db: Session = Depends(get_db), user_email: str = Body(...)):
-    user = db.query(models.User).filter(models.User.email == user_email).first()
+def change_password(data: schemas.PasswordUpdate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == data.user_email).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     import bcrypt
