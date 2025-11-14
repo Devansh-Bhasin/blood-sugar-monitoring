@@ -10,7 +10,7 @@ class AppointmentBase(BaseModel):
     start_time: datetime.datetime
     end_time: datetime.datetime
     reason: Optional[str] = None
-    notes: str = None
+    notes: Optional[str] = None
     status: str = "scheduled"
 
 class AppointmentCreate(AppointmentBase):

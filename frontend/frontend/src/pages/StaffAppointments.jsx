@@ -14,7 +14,7 @@ const StaffAppointments = () => {
   const [patients, setPatients] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null); // Date object
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [form, setForm] = useState({ patient_id: "", specialist_id: "", notes: "", start_time: "", end_time: "" });
+  const [form, setForm] = useState({ patient_id: "", specialist_id: "", reason: "", start_time: "", end_time: "" });
   const [filterSpecialist, setFilterSpecialist] = useState("");
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editEvent, setEditEvent] = useState(null);
@@ -86,7 +86,7 @@ const StaffAppointments = () => {
       end_time
     });
     setSelectedSlot(null);
-    setForm({ patient_id: "", specialist_id: "", notes: "" });
+    setForm({ patient_id: "", specialist_id: "", reason: "" });
     // Refresh appointments
     let params = {};
     if (filterSpecialist) params.specialist_id = filterSpecialist;
@@ -115,7 +115,7 @@ const StaffAppointments = () => {
           onClick={() => {
             setShowCreateForm(f => !f);
             setSelectedSlot(null);
-            setForm({ patient_id: "", staff_id: "", notes: "", start_time: "", end_time: "" });
+            setForm({ patient_id: "", specialist_id: "", reason: "", start_time: "", end_time: "" });
           }}
         >{showCreateForm ? "Cancel" : "Create Appointment"}</button>
       </div>
@@ -132,7 +132,7 @@ const StaffAppointments = () => {
             });
             setShowCreateForm(false);
             setSelectedSlot(null);
-            setForm({ patient_id: "", staff_id: "", notes: "", start_time: "", end_time: "" });
+            setForm({ patient_id: "", specialist_id: "", reason: "", start_time: "", end_time: "" });
             // Refresh appointments
             let params = {};
             if (filterSpecialist) params.specialist_id = filterSpecialist;
@@ -157,7 +157,7 @@ const StaffAppointments = () => {
           <label style={{ marginLeft: 12 }}>End Time: </label>
           <input type="datetime-local" value={form.end_time} onChange={e => setForm(f => ({ ...f, end_time: e.target.value }))} required />
           <label style={{ marginLeft: 12 }}>Reason: </label>
-          <input value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} style={{ width: 200 }} required />
+          <input value={form.reason} onChange={e => setForm(f => ({ ...f, reason: e.target.value }))} style={{ width: 200 }} required />
           <button type="submit" style={{ marginLeft: 12 }}>Create</button>
         </form>
       )}
@@ -213,7 +213,7 @@ const StaffAppointments = () => {
                   start_time: editEvent.start_time,
                   end_time: editEvent.end_time,
                   reason: editEvent.reason,
-                  notes: editEvent.notes,
+                  reason: editEvent.reason,
                   status: editEvent.status
                 });
                 setEditEvent(null);
