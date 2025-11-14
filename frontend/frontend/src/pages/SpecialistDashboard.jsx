@@ -135,6 +135,9 @@ const SpecialistDashboard = () => {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2rem", justifyContent: "center" }}>
         {patients.map((p) => (
           <div key={p.patient_id} style={{ border: "1px solid #e0e0e0", borderRadius: 12, width: 340, background: "#fff", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", padding: "1.2rem", marginBottom: "2rem", display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 12 }}>
+              <img src={p.user.profile_image || "https://randomuser.me/api/portraits/lego/3.jpg"} alt="Profile" style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "2px solid #1976d2" }} />
+            </div>
             <p><b>Name:</b> {p.user.full_name}</p>
             <p><b>Email:</b> {p.user.email}</p>
             <p><b>Health Care #:</b> {p.health_care_number}</p>

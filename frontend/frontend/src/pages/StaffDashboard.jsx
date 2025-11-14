@@ -19,9 +19,7 @@ const StaffDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [specialists, setSpecialists] = useState([]);
   const [assignments, setAssignments] = useState({});
-  const [minNormal, setMinNormal] = useState(70);
-  const [maxNormal, setMaxNormal] = useState(130);
-  const [maxBorderline, setMaxBorderline] = useState(180);
+  // Remove global threshold state, use per-patient
   const [searchTerm, setSearchTerm] = useState("");
   const [showApptForm, setShowApptForm] = useState({}); // { patient_id: bool }
   const [apptForm, setApptForm] = useState({}); // { patient_id: { specialist_id, start_time, end_time, reason, notes } }
@@ -29,10 +27,26 @@ const StaffDashboard = () => {
   const [apptError, setApptError] = useState({});
 
   useEffect(() => {
-    const fetchPatients = async () => {
+    const fetchPatientsAndThresholds = async () => {
       try {
         const res = await api.get("/patients/");
-        setPatients(res.data);
+        const patientsWithThresholds = await Promise.all(res.data.map(async (p) => {
+          let thresholds = null;
+          try {
+            thresholds = await api.get(`/thresholds/patient/${p.patient_id}`);
+          } catch (err) {
+            // No thresholds set yet
+          }
+          return {
+            ...p,
+            _minNormal: thresholds?.data?.min_normal ?? "",
+            _maxNormal: thresholds?.data?.max_normal ?? "",
+            _maxBorderline: thresholds?.data?.max_borderline ?? "",
+            _thresholdId: thresholds?.data?.threshold_id ?? null,
+            _preferredUnit: p.preferred_unit || "mmol_L"
+          };
+        }));
+        setPatients(patientsWithThresholds);
       } catch (err) {
         console.error(err);
       }
@@ -45,7 +59,7 @@ const StaffDashboard = () => {
         console.error(err);
       }
     };
-    fetchPatients();
+    fetchPatientsAndThresholds();
     fetchSpecialists();
   }, []);
 
@@ -100,6 +114,9 @@ const StaffDashboard = () => {
       <div style={{ display: "flex", flexWrap: "wrap", gap: "1.5rem", justifyContent: "center" }}>
         {filteredPatients.map((p) => (
           <div key={p.patient_id} style={{ background: "#fff", borderRadius: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.08)", padding: "1.5rem", minWidth: 320, maxWidth: 360, flex: "1 1 340px", display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 12 }}>
+              <img src={p.user.profile_image || "https://randomuser.me/api/portraits/lego/3.jpg"} alt="Profile" style={{ width: 72, height: 72, borderRadius: "50%", objectFit: "cover", border: "2px solid #1976d2" }} />
+            </div>
             {assignments[p.patient_id]?.error && (
               <div style={{ color: 'red', marginBottom: '0.5rem', fontWeight: 500 }}>
                 {Array.isArray(assignments[p.patient_id].error)
@@ -111,6 +128,7 @@ const StaffDashboard = () => {
             <div style={{ marginBottom: 8 }}><strong>Email:</strong> {p.user.email}</div>
             <div style={{ marginBottom: 8 }}><strong>Health Care #:</strong> {p.health_care_number}</div>
             <div style={{ marginBottom: 8 }}><strong>Date of Birth:</strong> {p.date_of_birth}</div>
+            <div style={{ marginBottom: 8 }}><strong>Preferred Unit:</strong> {p._preferredUnit === "mg_dL" ? "mg/dL" : "mmol/L"}</div>
             {assignments[p.patient_id]?.length > 0 ? (
               <div style={{ marginTop: 12 }}>
                 <div style={{ marginBottom: 8 }}><strong>Assigned Specialist:</strong> {specialists.find(s => s.specialist_id === assignments[p.patient_id][0].specialist_id)?.user.full_name || "N/A"}</div>
@@ -221,19 +239,26 @@ const StaffDashboard = () => {
                     patient_id: p.patient_id,
                   });
                   alert("Thresholds updated for this patient!");
+                  // Refetch thresholds for this patient
+                  const thresholds = await api.get(`/thresholds/patient/${p.patient_id}`);
+                  p._minNormal = thresholds.data.min_normal;
+                  p._maxNormal = thresholds.data.max_normal;
+                  p._maxBorderline = thresholds.data.max_borderline;
+                  setPatients([...patients]);
                 } catch (err) {
                   alert("Failed to update thresholds for this patient");
                 }
               }}
               style={{ marginTop: 12, background: "#f8f8f8", borderRadius: 8, padding: "0.75rem" }}
             >
-              <div style={{ fontWeight: 500, marginBottom: 4 }}>Set Thresholds for {p.user.full_name}</div>
+              <div style={{ fontWeight: 500, marginBottom: 4 }}>Set Thresholds for {p.user.full_name} <span style={{ color: '#888', fontWeight: 400 }}>({p._preferredUnit === "mg_dL" ? "mg/dL" : "mmol/L"})</span></div>
               <label>Min Normal: </label>
               <input type="number" step="any" value={p._minNormal || ""} onChange={e => { p._minNormal = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
               <label style={{ marginLeft: 12 }}>Max Normal: </label>
               <input type="number" step="any" value={p._maxNormal || ""} onChange={e => { p._maxNormal = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
               <label style={{ marginLeft: 12 }}>Max Borderline: </label>
               <input type="number" step="any" value={p._maxBorderline || ""} onChange={e => { p._maxBorderline = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
+              <span style={{ marginLeft: 8, color: '#888' }}>{p._preferredUnit === "mg_dL" ? "mg/dL" : "mmol/L"}</span>
               <button type="submit" style={{ marginLeft: 12, padding: "0.4rem 1.2rem", borderRadius: 6, border: "none", background: "#3498db", color: "#fff", fontWeight: 500, cursor: "pointer" }}>Set Thresholds</button>
             </form>
           </div>

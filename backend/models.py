@@ -15,7 +15,7 @@ class User(Base):
     role = Column(String(16), nullable=False)
     full_name = Column(String(120), nullable=False)
     phone = Column(String(25))
-    profile_image = Column(String(255))
+    profile_image = Column(Text)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.datetime.utcnow)
 

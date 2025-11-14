@@ -11,6 +11,7 @@ import StaffDashboard from "./pages/StaffDashboard";
 import PatientProfile from "./pages/PatientProfile";
 import SpecialistProfile from "./pages/SpecialistProfile";
 import SpecialistAppointments from "./pages/SpecialistAppointments";
+import PatientAppointments from "./pages/PatientAppointments";
 import StaffProfile from "./pages/StaffProfile";
 import AddReading from "./pages/AddReading";
 import Alerts from "./pages/Alerts";
@@ -34,6 +35,7 @@ const App = () => (
       <Route path="/staff-profile" element={<StaffProfile />} />
   <Route path="/staff-appointments" element={<StaffAppointments />} />
   <Route path="/specialist-appointments" element={<SpecialistAppointments />} />
+  <Route path="/patient-appointments" element={<PatientAppointments />} />
       {/* Catch-all route for 404s */}
       <Route path="*" element={<Register />} />
     </Routes>

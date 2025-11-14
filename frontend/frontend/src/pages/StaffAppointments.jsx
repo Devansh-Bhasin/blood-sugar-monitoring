@@ -213,7 +213,6 @@ const StaffAppointments = () => {
                   start_time: editEvent.start_time,
                   end_time: editEvent.end_time,
                   reason: editEvent.reason,
-                  reason: editEvent.reason,
                   status: editEvent.status
                 });
                 setEditEvent(null);
