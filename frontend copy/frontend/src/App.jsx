@@ -6,7 +6,6 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import PatientDashboard from "./pages/PatientDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
 import SpecialistDashboard from "./pages/SpecialistDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
 import PatientProfile from "./pages/PatientProfile";
@@ -16,7 +15,6 @@ import StaffProfile from "./pages/StaffProfile";
 import AddReading from "./pages/AddReading";
 import Alerts from "./pages/Alerts";
 import StaffAppointments from "./pages/StaffAppointments";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => (
   <AuthProvider>
@@ -34,9 +32,8 @@ const App = () => (
       <Route path="/patient-profile" element={<PatientProfile />} />
       <Route path="/specialist-profile" element={<SpecialistProfile />} />
       <Route path="/staff-profile" element={<StaffProfile />} />
-    <Route path="/staff-appointments" element={<StaffAppointments />} />
-    <Route path="/specialist-appointments" element={<SpecialistAppointments />} />
-      <Route path="/admin" element={<ProtectedRoute roleRequired={"admin"}><AdminDashboard /></ProtectedRoute>} />
+  <Route path="/staff-appointments" element={<StaffAppointments />} />
+  <Route path="/specialist-appointments" element={<SpecialistAppointments />} />
       {/* Catch-all route for 404s */}
       <Route path="*" element={<Register />} />
     </Routes>

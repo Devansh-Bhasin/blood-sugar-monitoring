@@ -2,6 +2,7 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 import datetime
+from sqlalchemy import func
 
 # --- User CRUD ---
 def create_user(db: Session, user: schemas.UserCreate):
@@ -177,3 +178,180 @@ def create_report(db: Session, report: schemas.ReportCreate):
 
 def get_reports(db: Session):
     return db.query(models.Report).all()
+
+
+# --- Admin summary / stats ---
+def get_admin_summary(db: Session):
+    total_users = db.query(models.User).count()
+    total_patients = db.query(models.Patient).count()
+    total_specialists = db.query(models.Specialist).count()
+    total_readings = db.query(models.Reading).count()
+    
+    # Calculate average glucose with unit normalization (convert all to mmol/L)
+    readings = db.query(models.Reading.value, models.Reading.unit).all()
+    normalized_values = []
+    for val, unit in readings:
+        try:
+            v = float(val)
+            u = (unit or '').lower()
+            # Convert mg/dL to mmol/L
+            if u in ('mg/dl', 'mg_dl', 'mg_dl') or 'mg' in u:
+                v = v / 18.0
+            normalized_values.append(v)
+        except Exception:
+            continue
+    avg_glucose = (sum(normalized_values) / len(normalized_values)) if normalized_values else 0
+    
+    alerts_count = db.query(models.Alert).count()
+    reports_count = db.query(models.Report).count()
+
+    # Count patients whose average reading is above their configured max_normal (if threshold exists)
+    avg_by_patient = db.query(
+        models.Reading.patient_id.label('patient_id'),
+        func.avg(models.Reading.value).label('avg_val')
+    ).group_by(models.Reading.patient_id).subquery()
+
+    uncontrolled_patients_query = db.query(func.count()).select_from(models.Threshold).join(
+        avg_by_patient,
+        models.Threshold.patient_id == avg_by_patient.c.patient_id
+    ).filter(avg_by_patient.c.avg_val > models.Threshold.max_normal)
+
+    try:
+        uncontrolled_patients = int(uncontrolled_patients_query.scalar() or 0)
+    except Exception:
+        uncontrolled_patients = 0
+
+    return {
+        'total_users': total_users,
+        'total_patients': total_patients,
+        'total_specialists': total_specialists,
+        'total_readings': total_readings,
+        'average_glucose': float(avg_glucose),
+        'alerts_count': alerts_count,
+        'reports_count': reports_count,
+        'uncontrolled_patients': uncontrolled_patients
+    }
+
+
+def get_readings_daily_averages(db: Session, days: int = 30):
+    """
+    Return a list of {'date': 'YYYY-MM-DD', 'avg': float} for the last `days` days.
+    Normalizes readings to mmol/L (if needed) then averages per-day.
+    Returns averages in mmol/L.
+    """
+    try:
+        now = datetime.datetime.utcnow()
+        start = now - datetime.timedelta(days=days - 1)
+        # load readings in window and group by date after normalizing units to mmol/L
+        rows = db.query(models.Reading.timestamp, models.Reading.value, models.Reading.unit).filter(models.Reading.timestamp >= start).all()
+        per_day = {}
+        for ts, val, unit in rows:
+            try:
+                v = float(val)
+            except Exception:
+                continue
+            u = (unit or '').lower()
+            # normalize to mmol/L
+            if u in ('mg/dl', 'mg_dl', 'mg_dl') or 'mg' in u:
+                v = v / 18.0
+            # otherwise assume mmol/L already
+            # compute date string
+            try:
+                d = ts.date().isoformat()
+            except Exception:
+                # fallback: try string parsing
+                try:
+                    d = str(ts)[:10]
+                except Exception:
+                    continue
+            per_day.setdefault(d, []).append(v)
+
+        out = []
+        for i in range(days):
+            d = (start + datetime.timedelta(days=i)).date().isoformat()
+            vals = per_day.get(d, [])
+            avg = (sum(vals) / len(vals)) if vals else 0.0
+            out.append({'date': d, 'avg': float(avg)})
+        return out
+    except Exception:
+        return []
+
+
+def get_uncontrolled_patients(db: Session, days: int = 30):
+    """
+    Return patients whose average reading over the last `days` days exceeds
+    their configured max_normal threshold if present, otherwise compare to
+    sensible defaults based on the patient's preferred unit.
+    Returns list of dicts: {patient_id, avg, preferred_unit, threshold}
+    """
+    now = datetime.datetime.utcnow()
+    start = now - datetime.timedelta(days=days - 1)
+
+    results = []
+    # iterate patients who have readings in window
+    patients_with_readings = db.query(models.Patient).join(models.Reading).filter(models.Reading.timestamp >= start).all()
+    for p in patients_with_readings:
+        pid = p.patient_id
+        # load readings for the patient in the window
+        readings = db.query(models.Reading).filter(models.Reading.patient_id == pid).filter(models.Reading.timestamp >= start).all()
+        if not readings:
+            continue
+        # convert readings to patient's preferred unit
+        unit_pref = (p.preferred_unit or 'mmol_L')
+        vals = []
+        for r in readings:
+            try:
+                val = float(r.value)
+            except Exception:
+                continue
+            # convert if reading unit is mg_dL and preferred is mmol_L
+            if r.unit == 'mg_dL' and unit_pref == 'mmol_L':
+                val = val / 18.0
+            # convert if reading unit is mmol_L and preferred is mg_dL
+            if r.unit == 'mmol_L' and unit_pref == 'mg_dL':
+                val = val * 18.0
+            vals.append(val)
+        if not vals:
+            continue
+        avg = sum(vals) / len(vals)
+
+        # try to read threshold for this patient if DB supports it
+        threshold_max = None
+        try:
+            th = db.query(models.Threshold).filter(models.Threshold.patient_id == pid).first()
+            if th:
+                threshold_max = float(th.max_normal)
+        except Exception:
+            threshold_max = None
+
+        # fallback defaults by unit_pref
+        if threshold_max is None:
+            if unit_pref == 'mg_dL':
+                threshold_max = 140.0
+            else:
+                threshold_max = 7.8
+
+        # If threshold appears to be in the other unit (heuristic), convert to unit_pref
+        try:
+            if unit_pref == 'mmol_L' and threshold_max is not None and threshold_max > 50:
+                # likely stored as mg/dL, convert
+                threshold_max = threshold_max / 18.0
+            if unit_pref == 'mg_dL' and threshold_max is not None and threshold_max < 50:
+                # likely stored as mmol/L, convert
+                threshold_max = threshold_max * 18.0
+        except Exception:
+            pass
+
+        if avg > threshold_max:
+            # fetch user details
+            user = db.query(models.User).filter(models.User.user_id == pid).first()
+            results.append({
+                'patient_id': pid,
+                'full_name': user.full_name if user else None,
+                'email': user.email if user else None,
+                'preferred_unit': unit_pref,
+                'avg': avg,
+                'threshold': threshold_max
+            })
+
+    return results
