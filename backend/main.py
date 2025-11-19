@@ -6,35 +6,10 @@ import os
 # CORS middleware must be added before anything else
 app = FastAPI(title="Online Blood Sugar Monitoring System")
 
-# Allow common dev origins and Codespaces preview URLs. For local development
-# it's convenient to allow localhost and Codespaces forwarded hosts. In
-# production you should restrict this to your actual frontend host(s).
-DEFAULT_ALLOWED = [
-    "https://devansh-bhasin.github.io",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    # Common Codespaces/preview hosts you may encounter during development
-    "https://sturdy-tribble-wrq67wqrqq9rhg66-5173.app.github.dev",
-    "https://sturdy-tribble-wrq67wqrqq9rhg66-8000.app.github.dev",
-]
 
-# If you need to allow all origins for quick dev testing (not recommended for
-# production), set environment variable `DEV_ALLOW_ALL_ORIGINS=1` in the
-# environment where the backend runs. By default we allow the common dev
-# origins above.
-if os.getenv("DEV_ALLOW_ALL_ORIGINS", "1") == "1":
-    allow_origins = ["*"]
-else:
-    # You can add Codespaces/Codespaces-preview forwarded URLs here when needed.
-    allow_origins = DEFAULT_ALLOWED
-
-# If we allow all origins ("*"), browsers will reject Access-Control-Allow-Credentials
-# together with a wildcard origin. Disable credentials in that case to avoid CORS
-# failures during local development. In production, set `DEV_ALLOW_ALL_ORIGINS=0`
-# and configure explicit origins and credentials as needed.
+# Minimal, production-safe CORS config
+allow_origins = ["https://devansh-bhasin.github.io"]
 allow_credentials = True
-if allow_origins == ["*"]:
-    allow_credentials = False
 
 app.add_middleware(
     CORSMiddleware,
