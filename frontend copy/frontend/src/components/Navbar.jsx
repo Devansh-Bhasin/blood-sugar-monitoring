@@ -12,7 +12,6 @@ const Navbar = () => {
   const patientLinks = [
     { to: "/patient-dashboard", label: "Dashboard" },
     { to: "/add-reading", label: "Add Reading" },
-    { to: "/patient-appointments", label: "My Appointments" },
     { to: "/patient-profile", label: "Profile" }
   ];
   const specialistLinks = [
@@ -25,7 +24,7 @@ const Navbar = () => {
     { to: "/staff-appointments", label: "Appointments" },
     { to: "/staff-profile", label: "Profile" }
   ];
-  // Admin links
+  // Admin links fully removed
   let navLinks = [];
   if (role === "staff" || role === "clinic_staff") {
     navLinks = [...staffLinks];
@@ -33,8 +32,6 @@ const Navbar = () => {
     navLinks = [...patientLinks];
   } else if (role === "specialist") {
     navLinks = [...specialistLinks];
-  } else if (role === "admin") {
-    navLinks = [{ to: "/admin", label: "Admin" }];
   // No admin role UI
   } else {
     navLinks = [{ to: "/register", label: "Register" }];
@@ -103,29 +100,6 @@ const Navbar = () => {
                 marginLeft: "1rem"
               }}
             >Logout</button>
-            {/* Dev helper: quick login as admin when developing */}
-            {import.meta.env.DEV && !isLoggedIn && (
-              <button
-                onClick={() => {
-                  localStorage.setItem('token', 'token-10');
-                  localStorage.setItem('role', 'ADMIN');
-                  setRole('admin');
-                  window.dispatchEvent(new Event('roleChanged'));
-                  navigate('/admin');
-                }}
-                style={{
-                  color: "white",
-                  background: "#2ecc71",
-                  border: "none",
-                  borderRadius: 6,
-                  padding: "0.3rem 1rem",
-                  fontWeight: 500,
-                  fontSize: 16,
-                  cursor: "pointer",
-                  marginLeft: "1rem"
-                }}
-              >Dev: Login as Admin</button>
-            )}
           </>
         )}
       </div>
