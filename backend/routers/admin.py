@@ -1,4 +1,6 @@
 
+
+print("[ADMIN ROUTER] Loaded")
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from backend import crud
@@ -21,8 +23,10 @@ def get_db():
 
 @router.get("/summary")
 def admin_summary(Authorization: str = Header(None), db: Session = Depends(get_db)):
+    print("[ADMIN ROUTER] admin_summary called, Authorization:", Authorization)
     user = get_user_from_jwt(Authorization, db)
     if user.role.upper() != "ADMIN":
+        print(f"[ADMIN ROUTER] Forbidden: user role is {user.role}")
         raise HTTPException(status_code=403, detail="Forbidden: admin only")
     summary = crud.get_admin_summary(db)
     return summary
