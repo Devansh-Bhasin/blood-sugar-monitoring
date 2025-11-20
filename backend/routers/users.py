@@ -80,110 +80,60 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db), Authorization: s
 # Delete user (admin only)
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
-<<<<<<< HEAD
-    # Delete related clinic_staff rows if they exist
-    staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
-    for link in staff_links:
-        db.delete(link)
-    db.commit()  # Commit after deleting clinic_staff links
-
-    from backend.routers.jwt_utils import get_user_from_jwt
-    admin_user = get_user_from_jwt(Authorization, db)
-    print(f"[DELETE USER DEBUG] Extracted admin_user from JWT: {admin_user}")
-    if not admin_user or admin_user.role.upper() != "ADMIN":
-        print(f"[DELETE USER DEBUG] is_admin failed for user {admin_user}")
-=======
-        # Delete all SpecialistPatient records where user is a patient
-        if hasattr(crud.models, 'SpecialistPatient'):
-            db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.patient_id == user_id).delete()
-        # Delete all Appointments where user is a patient
-        if hasattr(crud.models, 'Appointment'):
-            db.query(crud.models.Appointment).filter(crud.models.Appointment.patient_id == user_id).delete()
+    # Admin check
     admin_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
     if not is_admin(db, admin_id):
->>>>>>> 00b0fcbff352006443e5673d2763e04ce0844fff
         raise HTTPException(status_code=403, detail="Admin only")
-    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
 
-<<<<<<< HEAD
-    # Delete related specialist_patient rows if they exist (as patient)
-    specialist_links = db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.patient_id == user_id).all()
-    for link in specialist_links:
-        db.delete(link)
-    db.commit()  # Commit after deleting specialist_patient links (as patient)
+    # Delete all SpecialistPatient records where user is a patient or specialist
+    if hasattr(crud.models, 'SpecialistPatient'):
+        db.query(crud.models.SpecialistPatient).filter(
+            (crud.models.SpecialistPatient.patient_id == user_id) |
+            (crud.models.SpecialistPatient.specialist_id == user_id)
+        ).delete()
 
-    # Delete related specialist_patient rows if they exist (as specialist)
-    specialist_links2 = db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.specialist_id == user_id).all()
-    for link in specialist_links2:
-        db.delete(link)
-    db.commit()  # Commit after deleting specialist_patient links (as specialist)
+    # Delete all Appointments where user is a patient or specialist
+    if hasattr(crud.models, 'Appointment'):
+        db.query(crud.models.Appointment).filter(
+            (crud.models.Appointment.patient_id == user_id) |
+            (crud.models.Appointment.specialist_id == user_id)
+        ).delete()
 
-    # Delete related patient record(s) if they exist
+    # Delete related patient record(s) and their dependencies
     patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
     if patient:
         db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == user_id).delete()
         db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == user_id).delete()
         db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == user_id).delete()
         db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == user_id).delete()
-        db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == user_id).delete()
-        db.query(crud.models.Appointment).filter(crud.models.Appointment.patient_id == user_id).delete()
-        db.commit()
+        if hasattr(crud.models, 'AIInsight'):
+            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == user_id).delete()
         db.delete(patient)
-        db.commit()
 
-    # Delete related specialist record(s) if they exist
-    specialist = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).first()
-    if specialist:
-        db.query(crud.models.Feedback).filter(crud.models.Feedback.specialist_id == specialist.specialist_id).delete()
-        db.query(crud.models.Alert).filter(crud.models.Alert.specialist_id == specialist.specialist_id).delete()
-        db.query(crud.models.AIInsight).filter(crud.models.AIInsight.specialist_id == specialist.specialist_id).delete()
-        db.query(crud.models.Appointment).filter(crud.models.Appointment.specialist_id == specialist.specialist_id).delete()
-        db.commit()
-        db.delete(specialist)
-        db.commit()
-
-=======
-    # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
-    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
-    # Always delete all specialist records (and related feedback/alerts) before deleting user
-    # Delete all SpecialistPatient records where user is a specialist or assigned patient
-    if hasattr(crud.models, 'SpecialistPatient'):
-        db.query(crud.models.SpecialistPatient).filter(
-            (crud.models.SpecialistPatient.specialist_id == user_id) |
-            (crud.models.SpecialistPatient.patient_id == user_id)
-        ).delete()
+    # Delete related specialist record(s) and their dependencies
     specialists = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).all()
     for specialist in specialists:
         db.query(crud.models.Feedback).filter(crud.models.Feedback.specialist_id == specialist.specialist_id).delete()
         db.query(crud.models.Alert).filter(crud.models.Alert.specialist_id == specialist.specialist_id).delete()
+        if hasattr(crud.models, 'AIInsight'):
+            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.specialist_id == specialist.specialist_id).delete()
         db.delete(specialist)
 
-    # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
-    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
-    if patient:
-        readings = db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == patient.patient_id).all()
-        for reading in readings:
-            db.delete(reading)
-        db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == patient.patient_id).delete()
-        db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == patient.patient_id).delete()
-        db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == patient.patient_id).delete()
-        if hasattr(crud.models, 'AIInsight'):
-            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == patient.patient_id).delete()
-        db.delete(patient)
+    # Delete related clinic_staff rows if they exist
+    staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
+    for link in staff_links:
+        db.delete(link)
 
-    # If user is clinic staff, delete staff record and thresholds
-    staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
-    if staff:
-        db.query(crud.models.Threshold).filter(crud.models.Threshold.configured_by == staff.staff_id).delete()
-        db.delete(staff)
+    # Delete thresholds configured by staff
+    db.query(crud.models.Threshold).filter(crud.models.Threshold.configured_by == user_id).delete()
 
     # Commit after deleting related records to avoid FK constraint errors
     db.commit()
 
     # Finally, delete the user
->>>>>>> 00b0fcbff352006443e5673d2763e04ce0844fff
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
     return
