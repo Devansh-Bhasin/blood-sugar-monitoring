@@ -36,8 +36,10 @@ function AdminDashboard() {
 
 
   const deleteUser = async (userId) => {
-    if (!userId) {
+    console.log('Attempting to delete user:', userId);
+    if (userId === undefined || userId === null || userId === "") {
       alert('Invalid user ID');
+      console.error('deleteUser called with invalid userId:', userId);
       return;
     }
     if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -48,9 +50,10 @@ function AdminDashboard() {
         withCredentials: true
       });
       setUsers(users.filter(u => u.user_id !== userId));
+      console.log('User deleted:', userId);
     } catch (err) {
       alert('Failed to delete user.');
-      console.error('Delete user error:', err);
+      console.error('Delete user error:', err, 'userId:', userId);
     }
   };
 
