@@ -12,14 +12,17 @@ const Navbar = () => {
   const patientLinks = [
     { to: "/patient-dashboard", label: "Dashboard" },
     { to: "/add-reading", label: "Add Reading" },
+    { to: "/patient-appointments", label: "My Appointments" },
     { to: "/patient-profile", label: "Profile" }
   ];
   const specialistLinks = [
     { to: "/specialist-dashboard", label: "Dashboard" },
+    { to: "/specialist-appointments", label: "Appointments" },
     { to: "/specialist-profile", label: "Profile" }
   ];
   const staffLinks = [
     { to: "/staff-dashboard", label: "Dashboard" },
+    { to: "/staff-appointments", label: "Appointments" },
     { to: "/staff-profile", label: "Profile" }
   ];
   const adminLinks = [

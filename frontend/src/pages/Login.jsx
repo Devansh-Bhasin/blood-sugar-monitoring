@@ -41,7 +41,24 @@ const Login = () => {
             localStorage.setItem("patient_id", payload.sub);
           }
           if (role === "specialist") {
-            localStorage.setItem("specialist_id", payload.sub);
+            // Always fetch specialist profile to get real specialist_id
+            try {
+              api.get("/specialists/me", { headers: { Authorization: `Bearer ${token}` } })
+                .then(profileRes => {
+                  if (profileRes.data && profileRes.data.specialist_id) {
+                    localStorage.setItem("specialist_id", profileRes.data.specialist_id);
+                  } else {
+                    // fallback to sub if not found
+                    localStorage.setItem("specialist_id", payload.sub);
+                  }
+                })
+                .catch(() => {
+                  // fallback to sub if error
+                  localStorage.setItem("specialist_id", payload.sub);
+                });
+            } catch {
+              localStorage.setItem("specialist_id", payload.sub);
+            }
           }
         }
       }

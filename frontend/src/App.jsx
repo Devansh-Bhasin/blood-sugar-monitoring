@@ -10,11 +10,13 @@ import SpecialistDashboard from "./pages/SpecialistDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProfile from "./pages/AdminProfile";
+
 import PatientProfile from "./pages/PatientProfile";
 import SpecialistProfile from "./pages/SpecialistProfile";
 import StaffProfile from "./pages/StaffProfile";
 import AddReading from "./pages/AddReading";
 import Alerts from "./pages/Alerts";
+import PatientAppointments from "./pages/PatientAppointments";
 
 const App = () => (
   <AuthProvider>
@@ -33,6 +35,7 @@ const App = () => (
       <Route path="/patient-profile" element={<PatientProfile />} />
       <Route path="/specialist-profile" element={<SpecialistProfile />} />
       <Route path="/staff-profile" element={<StaffProfile />} />
+      <Route path="/patient-appointments" element={<PatientAppointments />} />
       {/* Catch-all route for 404s */}
       <Route path="*" element={<Register />} />
     </Routes>
