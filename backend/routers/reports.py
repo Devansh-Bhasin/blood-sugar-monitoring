@@ -54,15 +54,10 @@ def generate_report(
     db: Session = Depends(get_db),
     Authorization: str = Header(None)
 ):
-    # Admin check (use sub and role from JWT, like other admin endpoints)
-    token = Authorization.replace("Bearer ", "") if Authorization else None
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        user_id = int(payload.get("sub")) if payload.get("sub") else None
-        role = payload.get("role", "").lower()
-    except Exception:
-        raise HTTPException(status_code=403, detail="Invalid token")
-    if role != "admin":
+    # Admin check: use get_user_from_jwt for consistency with other admin endpoints
+    from backend.routers.jwt_utils import get_user_from_jwt
+    user = get_user_from_jwt(Authorization, db)
+    if user.role.upper() != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin only")
 
     today = datetime.date.today()
