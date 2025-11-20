@@ -47,7 +47,8 @@ SECRET_KEY = getenv("SECRET_KEY", "secret")
 def get_current_user_id(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return payload.get("user_id")
+        # Use 'sub' field, which is the user_id in your JWTs
+        return int(payload.get("sub")) if payload.get("sub") else None
     except Exception:
         return None
 
