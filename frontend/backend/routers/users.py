@@ -88,8 +88,16 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
 
     # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
     patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
+    # Always delete specialist record (and related feedback/alerts) before deleting user
+    specialist = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).first()
+    if specialist:
+        db.query(crud.models.Feedback).filter(crud.models.Feedback.specialist_id == specialist.specialist_id).delete()
+        db.query(crud.models.Alert).filter(crud.models.Alert.specialist_id == specialist.specialist_id).delete()
+        db.delete(specialist)
+
+    # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
+    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
     if patient:
-        # Delete all readings for this patient using ORM to trigger cascade
         readings = db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == patient.patient_id).all()
         for reading in readings:
             db.delete(reading)
@@ -99,13 +107,6 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
         if hasattr(crud.models, 'AIInsight'):
             db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == patient.patient_id).delete()
         db.delete(patient)
-
-    # If user is a specialist, delete specialist record (and optionally related feedback/alerts)
-    specialist = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).first()
-    if specialist:
-        db.query(crud.models.Feedback).filter(crud.models.Feedback.specialist_id == specialist.specialist_id).delete()
-        db.query(crud.models.Alert).filter(crud.models.Alert.specialist_id == specialist.specialist_id).delete()
-        db.delete(specialist)
 
     # If user is clinic staff, delete staff record and thresholds
     staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
