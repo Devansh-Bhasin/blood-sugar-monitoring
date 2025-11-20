@@ -1,3 +1,32 @@
+            {/* Per-patient threshold form */}
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const staffId = getStaffId();
+                try {
+                  await api.post("/thresholds/", {
+                    min_normal: p._minNormal || 70,
+                    max_normal: p._maxNormal || 130,
+                    max_borderline: p._maxBorderline || 180,
+                    configured_by: staffId,
+                    patient_id: p.patient_id,
+                  });
+                  alert("Thresholds updated for this patient!");
+                } catch (err) {
+                  alert("Failed to update thresholds for this patient");
+                }
+              }}
+              style={{ marginTop: 12, background: "#f8f8f8", borderRadius: 8, padding: "0.75rem" }}
+            >
+              <div style={{ fontWeight: 500, marginBottom: 4 }}>Set Thresholds for {p.user.full_name}</div>
+              <label>Min Normal: </label>
+              <input type="number" step="any" value={p._minNormal || ""} onChange={e => { p._minNormal = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
+              <label style={{ marginLeft: 12 }}>Max Normal: </label>
+              <input type="number" step="any" value={p._maxNormal || ""} onChange={e => { p._maxNormal = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
+              <label style={{ marginLeft: 12 }}>Max Borderline: </label>
+              <input type="number" step="any" value={p._maxBorderline || ""} onChange={e => { p._maxBorderline = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
+              <button type="submit" style={{ marginLeft: 12, padding: "0.4rem 1.2rem", borderRadius: 6, border: "none", background: "#3498db", color: "#fff", fontWeight: 500, cursor: "pointer" }}>Set Thresholds</button>
+            </form>
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
 
