@@ -80,11 +80,12 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db), Authorization: s
 # Delete user (admin only)
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
-        # Delete related clinic_staff rows if they exist
-        staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
-        for link in staff_links:
-            db.delete(link)
-        db.commit()  # Commit after deleting clinic_staff links
+    # Delete related clinic_staff rows if they exist
+    staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
+    for link in staff_links:
+        db.delete(link)
+    db.commit()  # Commit after deleting clinic_staff links
+
     from backend.routers.jwt_utils import get_user_from_jwt
     admin_user = get_user_from_jwt(Authorization, db)
     print(f"[DELETE USER DEBUG] Extracted admin_user from JWT: {admin_user}")
