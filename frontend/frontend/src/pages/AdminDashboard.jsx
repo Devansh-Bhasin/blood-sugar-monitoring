@@ -29,8 +29,10 @@ function AdminDashboard() {
   }, [role, navigate]);
 
   const [users, setUsers] = useState([]);
-  const [reports, setReports] = useState([]);
+  const [reportData, setReportData] = useState(null);
   const [selectedReportType, setSelectedReportType] = useState('monthly');
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [loading, setLoading] = useState(false);
   const [summary, setSummary] = useState(null);
   const [dailyAverages, setDailyAverages] = useState([]);
@@ -38,10 +40,13 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
-    fetchReports(selectedReportType);
     fetchAdminSummary();
     fetchDailyAverages(30);
-  }, [selectedReportType]);
+  }, []);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [selectedReportType, selectedYear, selectedMonth]);
 
   const fetchUsers = async () => {
     try {
@@ -53,10 +58,16 @@ function AdminDashboard() {
   };
 
   const deleteUser = async (userId) => {
+    if (!userId) {
+      alert('Invalid user ID.');
+      return;
+    }
     if (!window.confirm('Are you sure you want to delete this user?')) return;
     try {
-      await axios.delete(`${API_BASE_URL}/users/${userId}`, { withCredentials: true });
-      setUsers(users.filter(u => u.id !== userId));
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      await axios.delete(`${API_BASE_URL}/users/${userId}`, { headers });
+      setUsers(users.filter(u => u.user_id !== userId));
     } catch (err) {
       alert('Failed to delete user.');
     }
@@ -73,20 +84,19 @@ function AdminDashboard() {
     }
   };
 
-  const fetchReports = async (type) => {
+
+  const fetchReportData = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE_URL}/reports/`, { withCredentials: true });
-      const data = res.data || [];
-      // normalize type strings for filtering (backend stores e.g. 'Monthly' or 'monthly')
-      const normalized = data.filter(r => {
-        if (!type) return true;
-        const t = String(r.type || r.period || '').toLowerCase();
-        return t.includes(type.toLowerCase());
-      });
-      setReports(normalized);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      let params = `period_type=${selectedReportType}&year=${selectedYear}`;
+      if (selectedReportType === 'monthly') params += `&month=${selectedMonth}`;
+      const res = await axios.get(`${API_BASE_URL}/reports/generate?${params}`, { headers });
+      setReportData(res.data);
     } catch (err) {
-      console.error('Error fetching reports:', err);
+      setReportData(null);
+      console.error('Error fetching report data:', err);
     }
     setLoading(false);
   };
@@ -153,13 +163,13 @@ function AdminDashboard() {
           </thead>
           <tbody>
             {users.map(user => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
+              <tr key={user.user_id}>
+                <td>{user.user_id}</td>
+                <td>{user.full_name}</td>
                 <td>{user.email}</td>
                 <td>{user.role}</td>
                 <td>
-                  <button onClick={() => deleteUser(user.id)}>Delete</button>
+                  <button onClick={() => deleteUser(user.user_id)}>Delete</button>
                 </td>
               </tr>
             ))}
@@ -167,36 +177,73 @@ function AdminDashboard() {
         </table>
       </section>
       <section>
-        <h3>Reports</h3>
-        <div>
-          <label>Report Type: </label>
+        <h3>Generate Report</h3>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 12 }}>
+          <label>Type:</label>
           <select value={selectedReportType} onChange={e => setSelectedReportType(e.target.value)}>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
           </select>
+          <label>Year:</label>
+          <select value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))}>
+            {Array.from({ length: 6 }, (_, i) => new Date().getFullYear() - i).map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          {selectedReportType === 'monthly' && (
+            <>
+              <label>Month:</label>
+              <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))}>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(m => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
-        {loading ? <p>Loading reports...</p> : (
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Type</th>
-                <th>Created</th>
-                <th>Summary</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reports.map(report => (
-                <tr key={report.id}>
-                  <td>{report.id}</td>
-                  <td>{report.type}</td>
-                  <td>{report.created_at}</td>
-                  <td>{report.summary}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+        {loading ? <p>Loading report...</p> : reportData ? (
+          <div style={{ marginBottom: 24 }}>
+            <h4>Report for {reportData.period} ({reportData.period_start} to {reportData.period_end})</h4>
+            <div style={{ marginBottom: 12 }}>
+              <b>Total Active Patients:</b> {reportData.total_active_patients}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <b>Top Food Triggers:</b> {reportData.top_food_triggers && reportData.top_food_triggers.length > 0 ? (
+                <ul>{reportData.top_food_triggers.map(([food, count]) => <li key={food}>{food} ({count})</li>)}</ul>
+              ) : 'None'}
+            </div>
+            <div style={{ marginBottom: 12 }}>
+              <b>Top Activity Triggers:</b> {reportData.top_activity_triggers && reportData.top_activity_triggers.length > 0 ? (
+                <ul>{reportData.top_activity_triggers.map(([act, count]) => <li key={act}>{act} ({count})</li>)}</ul>
+              ) : 'None'}
+            </div>
+            <div>
+              <b>Patient Statistics:</b>
+              <table style={{ width: '100%', marginTop: 8, borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#f0f0f0' }}>
+                    <th>Patient</th>
+                    <th>Average</th>
+                    <th>Min</th>
+                    <th>Max</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {reportData.patients && reportData.patients.length > 0 ? reportData.patients.map(p => (
+                    <tr key={p.patient_id}>
+                      <td>{p.full_name || p.patient_id}</td>
+                      <td>{p.avg && !isNaN(p.avg) ? p.avg.toFixed(2) : '-'}</td>
+                      <td>{p.min && !isNaN(p.min) ? p.min.toFixed(2) : '-'}</td>
+                      <td>{p.max && !isNaN(p.max) ? p.max.toFixed(2) : '-'}</td>
+                    </tr>
+                  )) : (
+                    <tr><td colSpan={4}>No data</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : <p>No report data available.</p>}
       </section>
       <section>
         <h3>Recent Glucose (last 30 days)</h3>

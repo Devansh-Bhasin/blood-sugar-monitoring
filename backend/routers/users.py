@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
@@ -38,10 +38,24 @@ def create_sample_user(db: Session = Depends(get_db)):
 
 # Admin profile endpoints
 from fastapi import Header, Body
+import jwt
+from backend.models import User
+from fastapi import Request
+from backend.database import SessionLocal
+from os import getenv
+SECRET_KEY = getenv("SECRET_KEY", "secret")
 def get_current_user_id(token: str):
-    if token and token.startswith("token-"):
-        return int(token.split("-")[1])
-    return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return payload.get("user_id")
+    except Exception:
+        return None
+
+def is_admin(db: Session, user_id: int):
+    user = db.query(User).filter(User.user_id == user_id).first()
+    return user and user.role.lower() == "admin"
+# Admin profile endpoints
+
 
 @router.get("/me", response_model=schemas.User)
 def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
@@ -50,6 +64,30 @@ def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Head
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
+# Get user by id (admin only)
+@router.get("/{user_id}", response_model=schemas.User)
+def get_user_by_id(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    admin_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not is_admin(db, admin_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+# Delete user (admin only)
+@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    admin_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not is_admin(db, admin_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return
 
 @router.put("/me", response_model=schemas.User)
 def update_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None), form: dict = Body(...)):
