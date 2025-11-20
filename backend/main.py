@@ -1,4 +1,6 @@
 
+print("[MAIN] main.py started - deployment test")
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
