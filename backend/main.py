@@ -21,7 +21,9 @@ app.add_middleware(
 
 
 from backend.database import Base, engine
+
 from backend.routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient, appointments, admin
+print("[MAIN] Imported admin router")
 
 from fastapi.responses import Response
 @app.options("/auth/login")
