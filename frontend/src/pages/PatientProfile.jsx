@@ -7,23 +7,58 @@ const PatientProfile = () => {
   const [form, setForm] = useState({});
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '' });
+  const [threshold, setThreshold] = useState(null);
+  const [thresholdForm, setThresholdForm] = useState({ min_normal: '', max_normal: '', max_borderline: '' });
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchProfileAndThreshold = async () => {
       try {
         const token = localStorage.getItem("token");
-        console.log("PatientProfile token:", token);
         const res = await api.get("/patients/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(res.data);
         setForm(res.data);
+        // Fetch threshold for this patient
+        const patientId = res.data.patient_id;
+        try {
+          const tRes = await api.get(`/thresholds/patient/${patientId}`);
+          setThreshold(tRes.data);
+          setThresholdForm({
+            min_normal: tRes.data.min_normal,
+            max_normal: tRes.data.max_normal,
+            max_borderline: tRes.data.max_borderline
+          });
+        } catch (err) {
+          setThreshold(null);
+          setThresholdForm({ min_normal: '', max_normal: '', max_borderline: '' });
+        }
       } catch (err) {
         console.error(err);
       }
     };
-    fetchProfile();
+    fetchProfileAndThreshold();
   }, []);
+  const handleThresholdChange = (e) => {
+    setThresholdForm({ ...thresholdForm, [e.target.name]: e.target.value });
+  };
+
+  const handleThresholdSave = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      await api.post("/thresholds/", {
+        ...thresholdForm,
+        patient_id: profile.patient_id,
+        configured_by: null // or set staff_id if available
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert("Thresholds updated!");
+      setThreshold({ ...thresholdForm });
+    } catch (err) {
+      alert("Failed to update thresholds");
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -153,6 +188,24 @@ const PatientProfile = () => {
           <button onClick={() => setEditMode(true)}>Edit Profile</button>
         </div>
       )}
+
+      {/* Patient threshold view/edit */}
+      <div style={{ marginTop: 32, background: '#f8f8f8', borderRadius: 8, padding: 24, maxWidth: 400 }}>
+        <h3>My Blood Sugar Thresholds</h3>
+        <div>
+          <label>Min Normal: </label>
+          <input type="number" name="min_normal" value={thresholdForm.min_normal} onChange={handleThresholdChange} style={{ marginLeft: 8, width: 80 }} />
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <label>Max Normal: </label>
+          <input type="number" name="max_normal" value={thresholdForm.max_normal} onChange={handleThresholdChange} style={{ marginLeft: 8, width: 80 }} />
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <label>Max Borderline: </label>
+          <input type="number" name="max_borderline" value={thresholdForm.max_borderline} onChange={handleThresholdChange} style={{ marginLeft: 8, width: 80 }} />
+        </div>
+        <button onClick={handleThresholdSave} style={{ marginTop: 16, padding: '0.5rem 1.5rem', borderRadius: 6, border: 'none', background: '#1976d2', color: '#fff', fontWeight: 500, cursor: 'pointer' }}>Save Thresholds</button>
+      </div>
     </div>
   );
 };
