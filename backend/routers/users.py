@@ -95,16 +95,32 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     # Delete related specialist_patient rows if they exist
     specialist_links = db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.patient_id == user_id).all()
     for link in specialist_links:
         db.delete(link)
     db.commit()  # Commit after deleting specialist_patient links
+
     # Delete related patient record(s) if they exist
     patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
     if patient:
+        # Delete all readings for this patient
+        db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == user_id).delete()
+        # Delete all feedback for this patient
+        db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == user_id).delete()
+        # Delete all alerts for this patient
+        db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == user_id).delete()
+        # Delete all thresholds for this patient
+        db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == user_id).delete()
+        # Delete all AIInsights for this patient
+        db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == user_id).delete()
+        # Delete all appointments for this patient
+        db.query(crud.models.Appointment).filter(crud.models.Appointment.patient_id == user_id).delete()
+        db.commit()  # Commit after deleting all related patient records
         db.delete(patient)
         db.commit()  # Commit after deleting patient to avoid constraint error
+
     db.delete(user)
     db.commit()
     return
