@@ -54,14 +54,15 @@ def generate_report(
     db: Session = Depends(get_db),
     Authorization: str = Header(None)
 ):
-    # Admin check
+    # Admin check (use sub and role from JWT, like other admin endpoints)
     token = Authorization.replace("Bearer ", "") if Authorization else None
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        user_id = payload.get("user_id")
+        user_id = int(payload.get("sub")) if payload.get("sub") else None
+        role = payload.get("role", "").lower()
     except Exception:
         raise HTTPException(status_code=403, detail="Invalid token")
-    if not is_admin(db, user_id):
+    if role != "admin":
         raise HTTPException(status_code=403, detail="Admin only")
 
     today = datetime.date.today()
