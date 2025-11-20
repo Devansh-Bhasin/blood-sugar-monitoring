@@ -89,6 +89,11 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    # Delete related patient record(s) if they exist
+    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
+    if patient:
+        db.delete(patient)
+        db.commit()  # Commit after deleting patient to avoid constraint error
     db.delete(user)
     db.commit()
     return
