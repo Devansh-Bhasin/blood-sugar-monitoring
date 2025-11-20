@@ -88,9 +88,9 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
 
     # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
     patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
-    # Always delete specialist record (and related feedback/alerts) before deleting user
-    specialist = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).first()
-    if specialist:
+    # Always delete all specialist records (and related feedback/alerts) before deleting user
+    specialists = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).all()
+    for specialist in specialists:
         db.query(crud.models.Feedback).filter(crud.models.Feedback.specialist_id == specialist.specialist_id).delete()
         db.query(crud.models.Alert).filter(crud.models.Alert.specialist_id == specialist.specialist_id).delete()
         db.delete(specialist)
