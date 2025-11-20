@@ -27,7 +27,7 @@ class Patient(Base):
     date_of_birth = Column(DateTime)
     preferred_unit = Column(String(8), nullable=False, default="mmol_L")
     user = relationship("User")
-    readings = relationship("Reading", back_populates="patient")
+    readings = relationship("Reading", back_populates="patient", cascade="all, delete-orphan")
     feedback = relationship("Feedback", back_populates="patient")
     alerts = relationship("Alert", back_populates="patient")
 
