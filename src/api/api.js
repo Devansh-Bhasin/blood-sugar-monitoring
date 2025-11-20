@@ -1,3 +1,22 @@
+// Delete user (admin only)
+export const deleteUserById = async (userId, token) => {
+  return await API.delete(`/users/${userId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true
+  });
+};
+
+// Fetch admin report (monthly/yearly)
+export const fetchAdminReport = async (type, year, month, token) => {
+  let params = { period_type: type, year };
+  if (type === 'monthly') params.month = month;
+  const res = await API.get('/reports/generate', {
+    params,
+    headers: { Authorization: `Bearer ${token}` },
+    withCredentials: true
+  });
+  return res.data;
+};
 // Specialist-patient assignment management
 export const assignSpecialistToPatient = async (specialist_id, patient_id) => {
   return await API.post("/specialist_patient/assign", { specialist_id, patient_id });
