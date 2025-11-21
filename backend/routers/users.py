@@ -67,7 +67,14 @@ def is_admin(db: Session, user_id: int):
 
 @router.get("/me", response_model=schemas.User)
 def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
-    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    token = None
+    if Authorization:
+        parts = Authorization.split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+    print(f"[DEBUG /me] Raw Authorization header: {Authorization}")
+    print(f"[DEBUG /me] Extracted token: {token}")
+    user_id = get_current_user_id(token)
     print(f"[DEBUG /me] Extracted user_id from JWT: {user_id}")
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
     print(f"[DEBUG /me] User found in DB: {user}")
