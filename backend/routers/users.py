@@ -49,8 +49,7 @@ import jwt
 from backend.models import User
 from fastapi import Request
 from backend.database import SessionLocal
-from os import getenv
-SECRET_KEY = getenv("SECRET_KEY", "secret")
+SECRET_KEY = "supersecretkey"  # Must match JWT_SECRET in auth.py
 def get_current_user_id(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
