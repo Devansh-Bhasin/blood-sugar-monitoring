@@ -54,9 +54,12 @@ SECRET_KEY = getenv("SECRET_KEY", "secret")
 def get_current_user_id(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        # Use 'sub' field, which is the user_id in your JWTs
-        return int(payload.get("sub")) if payload.get("sub") else None
-    except Exception:
+        print(f"[DEBUG get_current_user_id] Decoded payload: {payload}")
+        sub = payload.get("sub")
+        print(f"[DEBUG get_current_user_id] Extracted sub: {sub}")
+        return int(sub) if sub is not None else None
+    except Exception as e:
+        print(f"[DEBUG get_current_user_id] Exception: {e}")
         return None
 
 def is_admin(db: Session, user_id: int):
