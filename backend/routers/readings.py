@@ -69,7 +69,7 @@ def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)
         crud.models.Reading.timestamp >= seven_days_ago
     ).all()
     abnormal_count = len(abnormal_readings)
-    if abnormal_count > 3:
+    if abnormal_count >= 3:
         # Check if an alert for this window already exists to avoid duplicates
         existing_alert = db.query(crud.models.Alert).filter(
             crud.models.Alert.patient_id == reading.patient_id,

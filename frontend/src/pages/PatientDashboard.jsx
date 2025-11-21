@@ -13,7 +13,7 @@ import {
 } from "chart.js";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-function ReadingItem({ reading, refreshReadings }) {
+function ReadingItem({ reading, refreshReadings, feedback }) {
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ ...reading });
 
@@ -43,6 +43,9 @@ function ReadingItem({ reading, refreshReadings }) {
     }
   };
 
+  // Find feedback for this reading
+  const readingFeedback = feedback.find(f => f.reading_id === reading.reading_id);
+
   return (
     <div style={{ border: "1px solid gray", margin: "1rem", padding: "1rem" }}>
       {editMode ? (
@@ -63,6 +66,11 @@ function ReadingItem({ reading, refreshReadings }) {
           <p>Food: {reading.food_intake}</p>
           <p>Activities: {reading.activities}</p>
           <p>Notes: {reading.notes}</p>
+          {readingFeedback && (
+            <div style={{ marginTop: '0.5rem', background: '#e3f2fd', borderRadius: 6, padding: '0.5rem 1rem' }}>
+              <b>Specialist Feedback:</b> {readingFeedback.comments}
+            </div>
+          )}
           <button onClick={() => setEditMode(true)}>Edit</button>
           <button onClick={handleDelete} style={{ marginLeft: "1rem" }}>Delete</button>
         </div>
@@ -81,9 +89,10 @@ const PatientDashboard = () => {
   }, []);
   const [readings, setReadings] = useState([]);
   const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [feedback, setFeedback] = useState([]);
 
   useEffect(() => {
-    const fetchReadingsAndAI = async () => {
+    const fetchAll = async () => {
       try {
         const patientId = localStorage.getItem("patient_id");
         if (!patientId) return;
@@ -92,11 +101,14 @@ const PatientDashboard = () => {
         // Fetch AI suggestions
         const aiRes = await api.get(`/readings/ai_suggestions/${patientId}`);
         setAiSuggestions(aiRes.data);
+        // Fetch specialist feedback
+        const feedbackRes = await api.get(`/feedback/patient/${patientId}`);
+        setFeedback(feedbackRes.data);
       } catch (err) {
         console.error(err);
       }
     };
-    fetchReadingsAndAI();
+    fetchAll();
   }, []);
 
   // Prepare chart data
@@ -139,7 +151,7 @@ const PatientDashboard = () => {
       <div style={{ maxWidth: 700, width: "100%" }}>
         <h3 style={{ marginBottom: "1rem" }}>Reading Details</h3>
         {readings.map((r) => (
-          <ReadingItem key={r.reading_id} reading={r} refreshReadings={() => window.location.reload()} />
+          <ReadingItem key={r.reading_id} reading={r} refreshReadings={() => window.location.reload()} feedback={feedback} />
         ))}
       </div>
     </div>

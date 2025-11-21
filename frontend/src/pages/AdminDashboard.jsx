@@ -38,12 +38,8 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
-    if (selectedReportType === 'monthly' && selectedMonth && selectedYear) {
-      fetchReports('monthly', selectedYear, selectedMonth);
-    } else if (selectedReportType === 'yearly') {
-      fetchReports('yearly', selectedYear);
-    }
-  }, [selectedReportType, selectedMonth, selectedYear]);
+    // Do not auto-fetch reports on dropdown change; wait for button click
+  }, []);
 
   const fetchUsers = async () => {
     setError("");
@@ -142,6 +138,15 @@ function AdminDashboard() {
   if (!isAdmin) {
     return <div style={{ maxWidth: 600, margin: '60px auto', textAlign: 'center', color: '#c00', fontSize: 20 }}><b>Access denied.</b> Admins only.</div>;
   }
+  // Handler for manual report generation
+  const handleGenerateReport = () => {
+    if (selectedReportType === 'monthly') {
+      fetchReports('monthly', selectedYear, selectedMonth);
+    } else if (selectedReportType === 'yearly') {
+      fetchReports('yearly', selectedYear);
+    }
+  };
+
   return (
     <div className="dashboard-container" style={{ maxWidth: 1000, margin: '0 auto', fontFamily: 'Segoe UI, Arial, sans-serif' }}>
       <h2 style={{ textAlign: 'center', margin: '24px 0 16px' }}>Admin Dashboard</h2>
@@ -193,6 +198,15 @@ function AdminDashboard() {
               <input type="number" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} style={{ width: 80, marginRight: 8, padding: 4 }} min="2000" max={new Date().getFullYear()} />
             </>
           )}
+          {selectedReportType === 'yearly' && (
+            <>
+              <label style={{ marginRight: 8 }}>Year:</label>
+              <input type="number" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} style={{ width: 80, marginRight: 8, padding: 4 }} min="2000" max={new Date().getFullYear()} />
+            </>
+          )}
+          <button onClick={handleGenerateReport} style={{ background: '#8e44ad', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>
+            Generate Report
+          </button>
           {reports.length > 0 && (
             <>
               <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>

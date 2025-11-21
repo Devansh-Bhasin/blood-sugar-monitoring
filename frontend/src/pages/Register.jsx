@@ -16,8 +16,11 @@ const Register = () => {
   const [preferredUnit, setPreferredUnit] = useState("mmol_L");
   const navigate = useNavigate();
 
+  const [errorMessage, setErrorMessage] = useState("");
+
   const handleRegister = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
     try {
       const userData = {
         email,
@@ -49,11 +52,15 @@ const Register = () => {
       } else {
         await api.post("/users/", userData);
       }
-  alert("Registration successful");
-  window.dispatchEvent(new Event("roleChanged"));
-  navigate("/login");
+      alert("Registration successful");
+      window.dispatchEvent(new Event("roleChanged"));
+      navigate("/login");
     } catch (err) {
-      alert("Registration failed");
+      if (err.response && err.response.data && err.response.data.detail) {
+        setErrorMessage(err.response.data.detail);
+      } else {
+        setErrorMessage("Registration failed. Please try again.");
+      }
     }
   };
 
@@ -64,6 +71,11 @@ const Register = () => {
         <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
           Already have an account? <a href="#/login" style={{ color: "#1976d2", fontWeight: 500 }}>Login</a>
         </div>
+        {errorMessage && (
+          <div style={{ color: '#d32f2f', marginBottom: '1rem', textAlign: 'center', fontWeight: 500 }}>
+            {errorMessage}
+          </div>
+        )}
         <form onSubmit={handleRegister}>
           <input
             type="email"

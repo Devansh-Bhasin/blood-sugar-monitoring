@@ -63,11 +63,10 @@ const PatientProfile = () => {
       const token = localStorage.getItem("token");
       const email = form.user?.email || profile.user?.email;
       await api.post("/auth/change-password", {
-        ...passwordForm
+        ...passwordForm,
+        user_email: email
       }, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {},
-        data: { user_email: email }
+        headers: { Authorization: `Bearer ${token}` }
       });
       alert("Password updated successfully");
       setShowPasswordChange(false);
