@@ -1,13 +1,13 @@
-# Debug endpoint to confirm router is active
-@router.get("/debug")
-def debug_users_router():
-    return {"status": "users router active"}
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
 
-router = APIRouter(prefix="/users", tags=["users"])
+
+# Debug endpoint to confirm router is active
+@router.get("/debug")
+def debug_users_router():
+    return {"status": "users router active"}
 
 from backend.database import SessionLocal
 def get_db():
