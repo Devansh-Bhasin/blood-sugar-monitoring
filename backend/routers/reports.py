@@ -105,21 +105,25 @@ def generate_report(
             "max": max_v
         })
 
-    # Top food/activity triggers (AI insights)
-    ai_insights = db.query(crud.models.AIInsight).filter(
-        crud.models.AIInsight.created_at >= start,
-        crud.models.AIInsight.created_at <= end
+    # Top food/activity triggers (AI logic: >=3 abnormal readings)
+    readings_in_period = db.query(crud.models.Reading).filter(
+        crud.models.Reading.timestamp >= start,
+        crud.models.Reading.timestamp <= end
     ).all()
-    from collections import Counter
-    food_triggers = Counter()
-    activity_triggers = Counter()
-    for insight in ai_insights:
-        if insight.trigger_type == "food" and insight.trigger_value:
-            food_triggers[insight.trigger_value] += insight.abnormal_count
-        if insight.trigger_type == "activity" and insight.trigger_value:
-            activity_triggers[insight.trigger_value] += insight.abnormal_count
-    top_foods = food_triggers.most_common(5)
-    top_activities = activity_triggers.most_common(5)
+    from collections import Counter, defaultdict
+    food_counter = Counter()
+    activity_counter = Counter()
+    for r in readings_in_period:
+        if r.category == "Abnormal" and r.food_intake:
+            food_counter[r.food_intake] += 1
+        if r.category == "Abnormal" and r.activities:
+            activity_counter[r.activities] += 1
+    # Only include triggers with >=3 abnormal readings
+    top_foods = [(food, count) for food, count in food_counter.items() if count >= 3]
+    top_activities = [(act, count) for act, count in activity_counter.items() if count >= 3]
+    # Sort by count descending, limit to 5
+    top_foods = sorted(top_foods, key=lambda x: -x[1])[:5]
+    top_activities = sorted(top_activities, key=lambda x: -x[1])[:5]
 
     return {
         "period": period_label,
