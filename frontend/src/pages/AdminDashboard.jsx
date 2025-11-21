@@ -12,6 +12,8 @@ function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
   const [selectedReportType, setSelectedReportType] = useState('monthly');
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(true);
@@ -36,8 +38,12 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchUsers();
-    fetchReports(selectedReportType);
-  }, [selectedReportType]);
+    if (selectedReportType === 'monthly' && selectedMonth && selectedYear) {
+      fetchReports('monthly', selectedYear, selectedMonth);
+    } else if (selectedReportType === 'yearly') {
+      fetchReports('yearly', selectedYear);
+    }
+  }, [selectedReportType, selectedMonth, selectedYear]);
 
   const fetchUsers = async () => {
     setError("");
@@ -74,18 +80,17 @@ function AdminDashboard() {
   };
 
 
-  const fetchReports = async (type) => {
+  const fetchReports = async (type, year, month) => {
     setLoading(true);
     setError("");
     try {
       const token = localStorage.getItem('token');
-      const today = new Date();
       let params = { period_type: type };
       if (type === 'monthly') {
-        params.year = today.getFullYear();
-        params.month = today.getMonth() + 1;
+        params.year = year;
+        params.month = month;
       } else if (type === 'yearly') {
-        params.year = today.getFullYear();
+        params.year = year;
       }
       const res = await axios.get(`${API_BASE_URL}/reports/generate`, {
         params,
@@ -119,6 +124,19 @@ function AdminDashboard() {
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
     pdf.addImage(imgData, 'PNG', (pageWidth - pdfWidth) / 2, 10, pdfWidth, pdfHeight);
     pdf.save(`admin_report_${reports[0]?.period || 'report'}.pdf`);
+  };
+
+  // Print report
+  const handlePrint = () => {
+    if (!reportRef.current) return;
+    const printContents = reportRef.current.innerHTML;
+    const win = window.open('', '', 'height=700,width=900');
+    win.document.write('<html><head><title>Print Report</title>');
+    win.document.write('</head><body >');
+    win.document.write(printContents);
+    win.document.write('</body></html>');
+    win.document.close();
+    win.print();
   };
 
   if (!isAdmin) {
@@ -156,17 +174,34 @@ function AdminDashboard() {
         </table>
       </section>
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, boxShadow: '0 2px 8px #0001' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
           <h3 style={{ flex: 1 }}>Reports</h3>
           <label style={{ marginRight: 8 }}>Report Type:</label>
           <select value={selectedReportType} onChange={e => setSelectedReportType(e.target.value)} style={{ marginRight: 16, padding: 4 }}>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
           </select>
+          {selectedReportType === 'monthly' && (
+            <>
+              <label style={{ marginRight: 8 }}>Month:</label>
+              <select value={selectedMonth} onChange={e => setSelectedMonth(Number(e.target.value))} style={{ marginRight: 8, padding: 4 }}>
+                {[...Array(12)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('default', { month: 'long' })}</option>
+                ))}
+              </select>
+              <label style={{ marginRight: 8 }}>Year:</label>
+              <input type="number" value={selectedYear} onChange={e => setSelectedYear(Number(e.target.value))} style={{ width: 80, marginRight: 8, padding: 4 }} min="2000" max={new Date().getFullYear()} />
+            </>
+          )}
           {reports.length > 0 && (
-            <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
-              Download PDF
-            </button>
+            <>
+              <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>
+                Download PDF
+              </button>
+              <button onClick={handlePrint} style={{ background: '#2ecc71', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
+                Print
+              </button>
+            </>
           )}
         </div>
         {loading ? <p>Loading reports...</p> : (
