@@ -3,6 +3,9 @@ from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
 
+# Define router before any usage
+router = APIRouter(prefix="/users", tags=["users"])
+
 
 # Debug endpoint to confirm router is active
 @router.get("/debug")
