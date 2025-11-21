@@ -9,16 +9,30 @@ const API_BASE_URL = 'https://blood-sugar-monitoring-system-3c4cc007e08e.herokua
 
 function AdminDashboard() {
   const navigate = window.reactRouterNavigate || ((path) => { window.location.href = path; });
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/login");
-    }
-  }, []);
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
   const [selectedReportType, setSelectedReportType] = useState('monthly');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [isAdmin, setIsAdmin] = useState(true);
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+    // Check if user is admin
+    axios.get(`${API_BASE_URL}/users/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(res => {
+        if (!res.data || res.data.role.toLowerCase() !== "admin") {
+          setIsAdmin(false);
+        }
+      })
+      .catch(() => {
+        setIsAdmin(false);
+      });
+  }, []);
 
   useEffect(() => {
     fetchUsers();
@@ -26,20 +40,23 @@ function AdminDashboard() {
   }, [selectedReportType]);
 
   const fetchUsers = async () => {
+    setError("");
     try {
-  const res = await axios.get(`${API_BASE_URL}/users/`, { withCredentials: true });
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`${API_BASE_URL}/users/`, { headers: { Authorization: `Bearer ${token}` }, withCredentials: true });
       setUsers(res.data);
     } catch (err) {
+      setError("Failed to fetch users. Please try again later.");
+      setUsers([]);
       console.error('Error fetching users:', err);
     }
   };
 
 
   const deleteUser = async (userId) => {
-    console.log('Attempting to delete user:', userId);
+    setError("");
     if (userId === undefined || userId === null || userId === "") {
-      alert('Invalid user ID');
-      console.error('deleteUser called with invalid userId:', userId);
+      setError('Invalid user ID');
       return;
     }
     if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -50,9 +67,8 @@ function AdminDashboard() {
         withCredentials: true
       });
       setUsers(users.filter(u => u.user_id !== userId));
-      console.log('User deleted:', userId);
     } catch (err) {
-      alert('Failed to delete user.');
+      setError('Failed to delete user.');
       console.error('Delete user error:', err, 'userId:', userId);
     }
   };
@@ -60,6 +76,7 @@ function AdminDashboard() {
 
   const fetchReports = async (type) => {
     setLoading(true);
+    setError("");
     try {
       const token = localStorage.getItem('token');
       const today = new Date();
@@ -77,8 +94,9 @@ function AdminDashboard() {
       });
       setReports([res.data]);
     } catch (err) {
-      console.error('Error fetching reports:', err);
+      setError("Failed to fetch reports. Please try again later.");
       setReports([]);
+      console.error('Error fetching reports:', err);
     }
     setLoading(false);
   };
@@ -103,9 +121,13 @@ function AdminDashboard() {
     pdf.save(`admin_report_${reports[0]?.period || 'report'}.pdf`);
   };
 
+  if (!isAdmin) {
+    return <div style={{ maxWidth: 600, margin: '60px auto', textAlign: 'center', color: '#c00', fontSize: 20 }}><b>Access denied.</b> Admins only.</div>;
+  }
   return (
     <div className="dashboard-container" style={{ maxWidth: 1000, margin: '0 auto', fontFamily: 'Segoe UI, Arial, sans-serif' }}>
       <h2 style={{ textAlign: 'center', margin: '24px 0 16px' }}>Admin Dashboard</h2>
+      {error && <div style={{ color: '#c00', marginBottom: 16, textAlign: 'center' }}>{error}</div>}
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, marginBottom: 32, boxShadow: '0 2px 8px #0001' }}>
         <h3>User Management</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>

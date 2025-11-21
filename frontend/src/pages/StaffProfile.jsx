@@ -1,4 +1,5 @@
 // ...restored code from backup...
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
@@ -7,6 +8,8 @@ const StaffProfile = () => {
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +46,30 @@ const StaffProfile = () => {
     });
   };
 
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordForm({ ...passwordForm, [name]: value });
+  };
+
+  const submitPasswordChange = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const email = form.user?.email || profile.user?.email;
+      await api.post("/auth/change-password", {
+        ...passwordForm
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {},
+        data: { user_email: email }
+      });
+      alert("Password updated successfully");
+      setShowPasswordChange(false);
+      setPasswordForm({ current_password: '', new_password: '' });
+    } catch (err) {
+      alert("Failed to update password");
+    }
+  };
+
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -63,7 +90,6 @@ const StaffProfile = () => {
       alert("Failed to update profile");
     }
   };
-
 
   if (!profile) return <div>Loading...</div>;
 
@@ -88,14 +114,31 @@ const StaffProfile = () => {
           <button onClick={() => setEditMode(false)} style={{ marginLeft: "1rem", background: '#eee', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Cancel</button>
         </div>
       ) : (
-        <div style={{ color: '#333', fontSize: 16 }}>
+        <div style={{ color: '#333', fontSize: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ marginBottom: 8 }}><b>Name:</b> {user.full_name}</div>
           <div style={{ marginBottom: 8 }}><b>Email:</b> {user.email}</div>
           <div style={{ marginBottom: 8 }}><b>Phone:</b> {user.phone}</div>
-          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!user.profile_image ? "None" : user.profile_image}</div>
-          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Edit Profile</button>
+          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!user.profile_image ? "None" : (
+            <img src={user.profile_image} alt="Profile" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '1px solid #1976d2', verticalAlign: 'middle' }} />
+          )}</div>
+          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem' }}>Edit Profile</button>
         </div>
       )}
+
+      {/* Password Change Section */}
+      <div style={{ marginTop: 32, background: '#f1f6fa', borderRadius: 10, padding: 18 }}>
+        <h4 style={{ marginBottom: 10, color: '#1976d2' }}>Change Password</h4>
+        {showPasswordChange ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <input type="password" name="current_password" value={passwordForm.current_password} onChange={handlePasswordChange} placeholder="Current Password" />
+            <input type="password" name="new_password" value={passwordForm.new_password} onChange={handlePasswordChange} placeholder="New Password" />
+            <button onClick={submitPasswordChange} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.5rem' }}>Update Password</button>
+            <button onClick={() => setShowPasswordChange(false)} style={{ background: '#eee', border: 'none', borderRadius: 6, padding: '0.5rem' }}>Cancel</button>
+          </div>
+        ) : (
+          <button onClick={() => setShowPasswordChange(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.5rem' }}>Change Password</button>
+        )}
+      </div>
     </div>
   );
 };

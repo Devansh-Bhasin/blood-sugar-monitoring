@@ -64,32 +64,21 @@ const SpecialistDashboard = () => {
     try {
       const specialistId = localStorage.getItem("specialist_id");
       if (!specialistId) return alert("Specialist ID missing");
-      // Check if feedback already exists for this specialist and reading
-      const existing = feedbacks.find(fb => String(fb.specialist_id) === String(specialistId) && String(fb.reading_id) === String(selectedReadingId));
-      if (existing) {
-        // Update feedback (PUT or PATCH)
-        await api.put(`/feedback/${existing.feedback_id}`, {
-          comments: feedbackText
-        }, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-      } else {
-        // Create new feedback
-        await api.post(
-          "/feedback/",
-          {
-            specialist_id: parseInt(specialistId),
-            patient_id: selectedPatient,
-            reading_id: selectedReadingId,
-            comments: feedbackText,
+      // Always POST new feedback (backend should handle upsert or error)
+      await api.post(
+        "/feedback/",
+        {
+          specialist_id: parseInt(specialistId),
+          patient_id: selectedPatient,
+          reading_id: selectedReadingId,
+          comments: feedbackText,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-      }
+        }
+      );
       setFeedbackText("");
       setSelectedReadingId(null);
       // Refresh feedbacks
@@ -148,40 +137,27 @@ const SpecialistDashboard = () => {
                   <p><b>Food:</b> {r.food_intake}</p>
                   <p><b>Activities:</b> {r.activities}</p>
                   <p><b>Notes:</b> {r.notes}</p>
-                  {existingFeedback ? (
-                    <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #1976d2", borderRadius: 8, background: "#e3f2fd" }}>
-                      <h4>Edit Feedback</h4>
-                      <textarea
-                        value={selectedReadingId === r.reading_id ? feedbackText : existingFeedback.comments}
-                        onChange={e => {
-                          setSelectedReadingId(r.reading_id);
-                          setFeedbackText(e.target.value);
-                        }}
-                        rows={3}
-                        style={{ width: "100%", borderRadius: 6, border: "1px solid #ccc", padding: "0.5rem" }}
-                        placeholder="Enter feedback/comments"
-                        disabled={selectedReadingId !== r.reading_id}
-                      />
-                      {selectedReadingId === r.reading_id ? (
-                        <>
-                          <button onClick={handleFeedbackSubmit} style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }}>
-                            Update Feedback
-                          </button>
-                          <button onClick={() => { setSelectedReadingId(null); setFeedbackText(""); }} style={{ marginLeft: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#e53935", color: "#fff", border: "none" }}>
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <button onClick={() => { setSelectedReadingId(r.reading_id); setFeedbackText(existingFeedback.comments); }} style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#43a047", color: "#fff", border: "none" }}>
-                          Edit Feedback
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <button onClick={() => { setSelectedReadingId(r.reading_id); setFeedbackText(""); }} style={{ padding: "0.5rem 1rem", borderRadius: 6, background: "#43a047", color: "#fff", border: "none" }}>
-                      Provide Feedback
+                  <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #1976d2", borderRadius: 8, background: "#e3f2fd" }}>
+                    <h4>{existingFeedback ? "Edit Feedback" : "Provide Feedback"}</h4>
+                    <textarea
+                      value={selectedReadingId === r.reading_id ? feedbackText : (existingFeedback ? existingFeedback.comments : "")}
+                      onChange={e => {
+                        setSelectedReadingId(r.reading_id);
+                        setFeedbackText(e.target.value);
+                      }}
+                      rows={3}
+                      style={{ width: "100%", borderRadius: 6, border: "1px solid #ccc", padding: "0.5rem" }}
+                      placeholder="Enter feedback/comments"
+                    />
+                    <button onClick={handleFeedbackSubmit} style={{ marginTop: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#1976d2", color: "#fff", border: "none" }}>
+                      {existingFeedback ? "Update Feedback" : "Submit Feedback"}
                     </button>
-                  )}
+                    {selectedReadingId === r.reading_id && (
+                      <button onClick={() => { setSelectedReadingId(null); setFeedbackText(""); }} style={{ marginLeft: "0.5rem", padding: "0.5rem 1rem", borderRadius: 6, background: "#e53935", color: "#fff", border: "none" }}>
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })

@@ -15,12 +15,21 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+      // Clear all user-related IDs before setting new ones
+      localStorage.removeItem("patient_id");
+      localStorage.removeItem("specialist_id");
+      localStorage.removeItem("staff_id");
+
       const res = await api.post("/auth/login", { email, password }, {
         headers: { 'Content-Type': 'application/json' }
       });
       console.log('LOGIN RESPONSE:', res.data);
       localStorage.setItem("token", res.data.access_token);
       let role = res.data.role ? res.data.role.toLowerCase() : null;
+      // Normalize staff/clinic_staff
+      if (role === "clinic_staff" || role === "staff") {
+        role = "staff";
+      }
       if (role) {
         localStorage.setItem("role", role);
         window.dispatchEvent(new Event("roleChanged"));
@@ -60,12 +69,15 @@ const Login = () => {
               localStorage.setItem("specialist_id", payload.sub);
             }
           }
+          if (role === "staff") {
+            localStorage.setItem("staff_id", payload.sub);
+          }
         }
       }
       console.log('localStorage.token:', localStorage.getItem('token'));
       console.log('localStorage.role:', localStorage.getItem('role'));
       alert("Login successful");
-      if (role === "staff" || role === "clinic_staff") {
+      if (role === "staff") {
         navigate("/staff-dashboard");
       } else if (role === "specialist") {
         navigate("/specialist-dashboard");

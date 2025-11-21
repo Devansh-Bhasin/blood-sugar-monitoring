@@ -2,6 +2,22 @@
 import React, { useEffect, useState } from "react";
 import api from "../api/api";
 
+// Helper to fetch thresholds from backend
+async function fetchThresholds(setMinNormal, setMaxNormal, setMaxBorderline) {
+  try {
+    const token = localStorage.getItem("token");
+    const res = await api.get("/thresholds/", { headers: { Authorization: `Bearer ${token}` } });
+    if (res.data && res.data.length > 0) {
+      const t = res.data[0];
+      setMinNormal(t.min_normal);
+      setMaxNormal(t.max_normal);
+      setMaxBorderline(t.max_borderline);
+    }
+  } catch (err) {
+    // fallback: do nothing
+  }
+}
+
 const StaffDashboard = () => {
   // Helper to refresh assignments for all patients
   const refreshAllAssignments = async () => {
@@ -20,9 +36,7 @@ const StaffDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [specialists, setSpecialists] = useState([]);
   const [assignments, setAssignments] = useState({});
-  const [minNormal, setMinNormal] = useState(70);
-  const [maxNormal, setMaxNormal] = useState(130);
-  const [maxBorderline, setMaxBorderline] = useState(180);
+  // Removed global threshold state
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -44,7 +58,9 @@ const StaffDashboard = () => {
     };
     fetchPatients();
     fetchSpecialists();
+    // No global threshold fetch
   }, []);
+  // Removed global threshold save logic
 
   useEffect(() => {
     // Fetch assignments for all patients whenever patients change
@@ -85,7 +101,7 @@ const StaffDashboard = () => {
   return (
     <div style={{ padding: "2rem", maxWidth: 1200, margin: "0 auto" }}>
       <h2 style={{ textAlign: "center", marginBottom: "2rem" }}>Staff Dashboard</h2>
-      <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "center" }}>
+      <div style={{ marginBottom: "1.5rem", display: "flex", justifyContent: "center", gap: 32 }}>
         <input
           type="text"
           placeholder="Search patient by name, email, or health care #..."
@@ -209,35 +225,8 @@ const StaffDashboard = () => {
                 </select>
               </div>
             )}
-            {/* Per-patient threshold form */}
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                const staffId = getStaffId();
-                try {
-                  await api.post("/thresholds/", {
-                    min_normal: p._minNormal || 70,
-                    max_normal: p._maxNormal || 130,
-                    max_borderline: p._maxBorderline || 180,
-                    configured_by: staffId,
-                    patient_id: p.patient_id,
-                  });
-                  alert("Thresholds updated for this patient!");
-                } catch (err) {
-                  alert("Failed to update thresholds for this patient");
-                }
-              }}
-              style={{ marginTop: 12, background: "#f8f8f8", borderRadius: 8, padding: "0.75rem" }}
-            >
-              <div style={{ fontWeight: 500, marginBottom: 4 }}>Set Thresholds for {p.user.full_name}</div>
-              <label>Min Normal: </label>
-              <input type="number" step="any" value={p._minNormal || ""} onChange={e => { p._minNormal = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
-              <label style={{ marginLeft: 12 }}>Max Normal: </label>
-              <input type="number" step="any" value={p._maxNormal || ""} onChange={e => { p._maxNormal = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
-              <label style={{ marginLeft: 12 }}>Max Borderline: </label>
-              <input type="number" step="any" value={p._maxBorderline || ""} onChange={e => { p._maxBorderline = e.target.value; setPatients([...patients]); }} style={{ marginLeft: 8, width: 80 }} />
-              <button type="submit" style={{ marginLeft: 12, padding: "0.4rem 1.2rem", borderRadius: 6, border: "none", background: "#3498db", color: "#fff", fontWeight: 500, cursor: "pointer" }}>Set Thresholds</button>
-            </form>
+            {/* Per-patient threshold form (loads and saves real backend values) */}
+            <PatientThresholdForm patient={p} />
           </div>
         ))}
       </div>
@@ -246,3 +235,84 @@ const StaffDashboard = () => {
 }
 
 export default StaffDashboard;
+
+
+// --- Per-patient threshold form component ---
+function PatientThresholdForm({ patient }) {
+  const [threshold, setThreshold] = React.useState(null);
+  const [minNormal, setMinNormal] = React.useState("");
+  const [maxNormal, setMaxNormal] = React.useState("");
+  const [maxBorderline, setMaxBorderline] = React.useState("");
+  const [loading, setLoading] = React.useState(true);
+  const [saving, setSaving] = React.useState(false);
+  React.useEffect(() => {
+    let mounted = true;
+    setLoading(true);
+    api.get(`/thresholds/patient/${patient.patient_id}`)
+      .then(res => {
+        if (!mounted) return;
+        setThreshold(res.data);
+        setMinNormal(res.data.min_normal);
+        setMaxNormal(res.data.max_normal);
+        setMaxBorderline(res.data.max_borderline);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setThreshold(null);
+        setMinNormal("");
+        setMaxNormal("");
+        setMaxBorderline("");
+      })
+      .finally(() => setLoading(false));
+    return () => { mounted = false; };
+  }, [patient.patient_id]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const staffId = localStorage.getItem("staff_id") || 1;
+      await api.post("/thresholds/", {
+        min_normal: minNormal,
+        max_normal: maxNormal,
+        max_borderline: maxBorderline,
+        configured_by: staffId,
+        patient_id: patient.patient_id,
+      });
+      alert("Thresholds updated for this patient!");
+      // Reload threshold
+      const res = await api.get(`/thresholds/patient/${patient.patient_id}`);
+      setThreshold(res.data);
+      setMinNormal(res.data.min_normal);
+      setMaxNormal(res.data.max_normal);
+      setMaxBorderline(res.data.max_borderline);
+    } catch (err) {
+      alert("Failed to update thresholds for this patient");
+    }
+    setSaving(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ marginTop: 12, background: "#f8f8f8", borderRadius: 8, padding: "0.75rem" }}>
+      <div style={{ fontWeight: 500, marginBottom: 4 }}>Set Thresholds for {patient.user.full_name}</div>
+      {loading ? (
+        <span>Loading...</span>
+      ) : (
+        <>
+          <label>Min Normal: </label>
+          <input type="number" step="any" value={minNormal} onChange={e => setMinNormal(e.target.value)} style={{ marginLeft: 8, width: 80 }} />
+          <label style={{ marginLeft: 12 }}>Max Normal: </label>
+          <input type="number" step="any" value={maxNormal} onChange={e => setMaxNormal(e.target.value)} style={{ marginLeft: 8, width: 80 }} />
+          <label style={{ marginLeft: 12 }}>Max Borderline: </label>
+          <input type="number" step="any" value={maxBorderline} onChange={e => setMaxBorderline(e.target.value)} style={{ marginLeft: 8, width: 80 }} />
+          <button type="submit" style={{ marginLeft: 12, padding: "0.4rem 1.2rem", borderRadius: 6, border: "none", background: "#3498db", color: "#fff", fontWeight: 500, cursor: "pointer" }} disabled={saving}>{saving ? "Saving..." : "Set Thresholds"}</button>
+          {threshold && threshold.updated_at && (
+            <div style={{ marginTop: 8, fontSize: 13, color: '#555' }}>
+              Last changed: {new Date(threshold.updated_at).toLocaleString()}
+            </div>
+          )}
+        </>
+      )}
+    </form>
+  );
+}

@@ -150,13 +150,15 @@ const PatientProfile = () => {
           )}
         </div>
       ) : (
-        <div style={{ color: '#333', fontSize: 16 }}>
+        <div style={{ color: '#333', fontSize: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ marginBottom: 8 }}><b>Name:</b> {profile.user?.full_name}</div>
           <div style={{ marginBottom: 8 }}><b>Email:</b> {profile.user?.email}</div>
           <div style={{ marginBottom: 8 }}><b>Phone:</b> {profile.user?.phone}</div>
-          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!profile.user?.profile_image ? "None" : profile.user?.profile_image}</div>
-          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Edit Profile</button>
-          <button onClick={() => setShowPasswordChange(!showPasswordChange)} style={{ marginLeft: 12, background: '#fff', border: '1px solid #1976d2', color: '#1976d2', borderRadius: 6, padding: '0.5rem', marginTop: 8 }}>
+          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!profile.user?.profile_image ? "None" : (
+            <img src={profile.user?.profile_image} alt="Profile" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '1px solid #1976d2', verticalAlign: 'middle' }} />
+          )}</div>
+          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem' }}>Edit Profile</button>
+          <button onClick={() => setShowPasswordChange(!showPasswordChange)} style={{ background: '#fff', border: '1px solid #1976d2', color: '#1976d2', borderRadius: 6, padding: '0.5rem' }}>
             {showPasswordChange ? "Hide Password Change" : "Change Password"}
           </button>
           {showPasswordChange && (

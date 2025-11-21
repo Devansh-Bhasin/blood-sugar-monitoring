@@ -17,6 +17,9 @@ import StaffProfile from "./pages/StaffProfile";
 import AddReading from "./pages/AddReading";
 import Alerts from "./pages/Alerts";
 import PatientAppointments from "./pages/PatientAppointments";
+import StaffAppointments from "./pages/StaffAppointments";
+import SpecialistAppointments from "./pages/SpecialistAppointments";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 const App = () => (
   <AuthProvider>
@@ -35,7 +38,9 @@ const App = () => (
       <Route path="/patient-profile" element={<PatientProfile />} />
       <Route path="/specialist-profile" element={<SpecialistProfile />} />
       <Route path="/staff-profile" element={<StaffProfile />} />
-      <Route path="/patient-appointments" element={<PatientAppointments />} />
+      <Route path="/patient-appointments" element={<ProtectedRoute roleRequired={"patient"}><PatientAppointments /></ProtectedRoute>} />
+      <Route path="/staff-appointments" element={<ProtectedRoute roleRequired={["staff", "clinic_staff"]}><StaffAppointments /></ProtectedRoute>} />
+      <Route path="/specialist-appointments" element={<ProtectedRoute roleRequired={"specialist"}><SpecialistAppointments /></ProtectedRoute>} />
       {/* Catch-all route for 404s */}
       <Route path="*" element={<Register />} />
     </Routes>
