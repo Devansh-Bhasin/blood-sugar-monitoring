@@ -71,8 +71,13 @@ def update_my_clinic_staff_profile(
     db.refresh(staff)
     return staff
 
+from fastapi import Header
+
 @router.post("/", response_model=schemas.ClinicStaff)
-def create_clinic_staff(staff: schemas.ClinicStaffCreate, db: Session = Depends(get_db)):
+def create_clinic_staff(staff: schemas.ClinicStaffCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
     return crud.create_clinic_staff(db, staff)
 
 @router.get("/", response_model=list[schemas.ClinicStaff])

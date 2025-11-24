@@ -8,6 +8,38 @@ import html2canvas from 'html2canvas';
 const API_BASE_URL = 'https://blood-sugar-monitoring-system-3c4cc007e08e.herokuapp.com/api';
 
 function AdminDashboard() {
+    // Admin-only: Create Staff/Specialist
+    const [newStaff, setNewStaff] = useState({ email: '', password: '', full_name: '', phone: '', profile_image: '' });
+    const [newSpecialist, setNewSpecialist] = useState({ email: '', password: '', full_name: '', phone: '', profile_image: '' });
+    const [createError, setCreateError] = useState('');
+    const handleCreateStaff = async (e) => {
+      e.preventDefault();
+      setCreateError('');
+      try {
+        const token = localStorage.getItem('token');
+        const staffData = { user: { ...newStaff, role: 'clinic_staff' } };
+        await axios.post(`${API_BASE_URL}/clinic_staff/`, staffData, { headers: { Authorization: `Bearer ${token}` } });
+        alert('Staff account created successfully');
+        setNewStaff({ email: '', password: '', full_name: '', phone: '', profile_image: '' });
+        fetchUsers();
+      } catch (err) {
+        setCreateError(err.response?.data?.detail || 'Failed to create staff account');
+      }
+    };
+    const handleCreateSpecialist = async (e) => {
+      e.preventDefault();
+      setCreateError('');
+      try {
+        const token = localStorage.getItem('token');
+        const specialistData = { user: { ...newSpecialist, role: 'specialist' }, specialist_code: '' };
+        await axios.post(`${API_BASE_URL}/specialists/`, specialistData, { headers: { Authorization: `Bearer ${token}` } });
+        alert('Specialist account created successfully');
+        setNewSpecialist({ email: '', password: '', full_name: '', phone: '', profile_image: '' });
+        fetchUsers();
+      } catch (err) {
+        setCreateError(err.response?.data?.detail || 'Failed to create specialist account');
+      }
+    };
   const navigate = window.reactRouterNavigate || ((path) => { window.location.href = path; });
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
@@ -152,6 +184,28 @@ function AdminDashboard() {
       <h2 style={{ textAlign: 'center', margin: '24px 0 16px' }}>Admin Dashboard</h2>
       {error && <div style={{ color: '#c00', marginBottom: 16, textAlign: 'center' }}>{error}</div>}
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, marginBottom: 32, boxShadow: '0 2px 8px #0001' }}>
+              {/* Admin-only: Create Staff/Specialist Section */}
+              <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, marginBottom: 32, boxShadow: '0 2px 8px #0001' }}>
+                <h3>Create Staff Account</h3>
+                <form onSubmit={handleCreateStaff} style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginBottom: 16 }}>
+                  <input type="email" placeholder="Email" value={newStaff.email} onChange={e => setNewStaff({ ...newStaff, email: e.target.value })} required style={{ flex: '1 1 180px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="password" placeholder="Password" value={newStaff.password} onChange={e => setNewStaff({ ...newStaff, password: e.target.value })} required style={{ flex: '1 1 120px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Full Name" value={newStaff.full_name} onChange={e => setNewStaff({ ...newStaff, full_name: e.target.value })} required style={{ flex: '1 1 120px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Phone" value={newStaff.phone} onChange={e => setNewStaff({ ...newStaff, phone: e.target.value })} style={{ flex: '1 1 120px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Profile Image URL" value={newStaff.profile_image} onChange={e => setNewStaff({ ...newStaff, profile_image: e.target.value })} style={{ flex: '1 1 180px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <button type="submit" style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontWeight: 600 }}>Create Staff</button>
+                </form>
+                <h3>Create Specialist Account</h3>
+                <form onSubmit={handleCreateSpecialist} style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                  <input type="email" placeholder="Email" value={newSpecialist.email} onChange={e => setNewSpecialist({ ...newSpecialist, email: e.target.value })} required style={{ flex: '1 1 180px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="password" placeholder="Password" value={newSpecialist.password} onChange={e => setNewSpecialist({ ...newSpecialist, password: e.target.value })} required style={{ flex: '1 1 120px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Full Name" value={newSpecialist.full_name} onChange={e => setNewSpecialist({ ...newSpecialist, full_name: e.target.value })} required style={{ flex: '1 1 120px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Phone" value={newSpecialist.phone} onChange={e => setNewSpecialist({ ...newSpecialist, phone: e.target.value })} style={{ flex: '1 1 120px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <input type="text" placeholder="Profile Image URL" value={newSpecialist.profile_image} onChange={e => setNewSpecialist({ ...newSpecialist, profile_image: e.target.value })} style={{ flex: '1 1 180px', padding: 8, borderRadius: 6, border: '1px solid #ccc' }} />
+                  <button type="submit" style={{ background: '#8e44ad', color: '#fff', border: 'none', borderRadius: 6, padding: '8px 16px', cursor: 'pointer', fontWeight: 600 }}>Create Specialist</button>
+                </form>
+                {createError && <div style={{ color: '#d32f2f', marginTop: 8, fontWeight: 500 }}>{createError}</div>}
+              </section>
         <h3>User Management</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
           <thead style={{ background: '#e3e3e3' }}>
