@@ -20,6 +20,8 @@ const AddReading = () => {
         alert("Patient ID not found. Please log in as a patient.");
         return;
       }
+      // Convert datetime-local to ISO string
+      let timestamp = dateTime ? new Date(dateTime).toISOString() : undefined;
       await api.post(
         "/readings/",
         {
@@ -30,7 +32,8 @@ const AddReading = () => {
           activities,
           event,
           symptom,
-          notes
+          notes,
+          timestamp
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
