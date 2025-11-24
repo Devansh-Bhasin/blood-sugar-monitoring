@@ -233,8 +233,8 @@ function AdminDashboard() {
         </table>
       </section>
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, boxShadow: '0 2px 8px #0001' }}>
+        <h3>Reports</h3>
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
-          <h3 style={{ flex: 1 }}>Reports</h3>
           <label style={{ marginRight: 8 }}>Report Type:</label>
           <select value={selectedReportType} onChange={e => setSelectedReportType(e.target.value)} style={{ marginRight: 16, padding: 4 }}>
             <option value="monthly">Monthly</option>
@@ -261,56 +261,56 @@ function AdminDashboard() {
           <button onClick={handleGenerateReport} style={{ background: '#8e44ad', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>
             Generate Report
           </button>
-          {reports.length > 0 && (
-            <>
-              <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>
-                Download PDF
-              </button>
-              <button onClick={handlePrint} style={{ background: '#2ecc71', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
-                Print
-              </button>
-            </>
-          )}
         </div>
         {loading ? <p>Loading reports...</p> : (
           reports.length > 0 ? (
-            <div ref={reportRef} style={{ background: '#fff', borderRadius: 8, padding: 20, boxShadow: '0 1px 4px #0001' }}>
-              <h4 style={{ marginBottom: 8 }}>Period: {reports[0].period}</h4>
-              <p style={{ fontWeight: 500 }}>Total Active Patients: {reports[0].total_active_patients}</p>
-              <h5 style={{ marginTop: 18 }}>Per-Patient Stats</h5>
-              <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 8, marginBottom: 16 }}>
-                <thead style={{ background: '#e3e3e3' }}>
-                  <tr>
-                    <th style={{ padding: 6, border: '1px solid #ccc' }}>Patient</th>
-                    <th style={{ padding: 6, border: '1px solid #ccc' }}>Avg</th>
-                    <th style={{ padding: 6, border: '1px solid #ccc' }}>Min</th>
-                    <th style={{ padding: 6, border: '1px solid #ccc' }}>Max</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reports[0].patients && reports[0].patients.map((p, i) => (
-                    <tr key={i}>
-                      <td style={{ padding: 6, border: '1px solid #eee' }}>{p.full_name || p.patient_id}</td>
-                      <td style={{ padding: 6, border: '1px solid #eee' }}>{p.avg}</td>
-                      <td style={{ padding: 6, border: '1px solid #eee' }}>{p.min}</td>
-                      <td style={{ padding: 6, border: '1px solid #eee' }}>{p.max}</td>
+            <>
+              <div ref={reportRef} style={{ background: '#fff', borderRadius: 8, padding: 20, boxShadow: '0 1px 4px #0001' }}>
+                <h4 style={{ marginBottom: 8 }}>Period: {reports[0].period}</h4>
+                <p style={{ fontWeight: 500 }}>Total Active Patients: {reports[0].total_active_patients}</p>
+                <h5 style={{ marginTop: 18 }}>Per-Patient Stats</h5>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 8, marginBottom: 16 }}>
+                  <thead style={{ background: '#e3e3e3' }}>
+                    <tr>
+                      <th style={{ padding: 6, border: '1px solid #ccc' }}>Patient</th>
+                      <th style={{ padding: 6, border: '1px solid #ccc' }}>Avg</th>
+                      <th style={{ padding: 6, border: '1px solid #ccc' }}>Min</th>
+                      <th style={{ padding: 6, border: '1px solid #ccc' }}>Max</th>
                     </tr>
+                  </thead>
+                  <tbody>
+                    {reports[0].patients && reports[0].patients.map((p, i) => (
+                      <tr key={i}>
+                        <td style={{ padding: 6, border: '1px solid #eee' }}>{p.full_name || p.patient_id}</td>
+                        <td style={{ padding: 6, border: '1px solid #eee' }}>{p.avg}</td>
+                        <td style={{ padding: 6, border: '1px solid #eee' }}>{p.min}</td>
+                        <td style={{ padding: 6, border: '1px solid #eee' }}>{p.max}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <h5 style={{ marginTop: 18 }}>Top Food Triggers</h5>
+                <ul style={{ marginBottom: 12 }}>
+                  {reports[0].top_food_triggers && reports[0].top_food_triggers.map(([food, count], i) => (
+                    <li key={i}>{food}: {count}</li>
                   ))}
-                </tbody>
-              </table>
-              <h5 style={{ marginTop: 18 }}>Top Food Triggers</h5>
-              <ul style={{ marginBottom: 12 }}>
-                {reports[0].top_food_triggers && reports[0].top_food_triggers.map(([food, count], i) => (
-                  <li key={i}>{food}: {count}</li>
-                ))}
-              </ul>
-              <h5 style={{ marginTop: 18 }}>Top Activity Triggers</h5>
-              <ul>
-                {reports[0].top_activity_triggers && reports[0].top_activity_triggers.map(([activity, count], i) => (
-                  <li key={i}>{activity}: {count}</li>
-                ))}
-              </ul>
-            </div>
+                </ul>
+                <h5 style={{ marginTop: 18 }}>Top Activity Triggers</h5>
+                <ul>
+                  {reports[0].top_activity_triggers && reports[0].top_activity_triggers.map(([activity, count], i) => (
+                    <li key={i}>{activity}: {count}</li>
+                  ))}
+                </ul>
+              </div>
+              <div style={{ marginTop: 16, display: 'flex', gap: 12 }}>
+                <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
+                  Download PDF
+                </button>
+                <button onClick={handlePrint} style={{ background: '#2ecc71', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
+                  Print
+                </button>
+              </div>
+            </>
           ) : <p>No report data available.</p>
         )}
       </section>
