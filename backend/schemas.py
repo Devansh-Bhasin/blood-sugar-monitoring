@@ -125,6 +125,7 @@ class ReadingBase(BaseModel):
     event: Optional[str] = None
     symptom: Optional[str] = None
     notes: Optional[str] = None
+    timestamp: Optional[datetime.datetime] = None
 # --- AI Insight Schemas ---
 class AIInsightBase(BaseModel):
     patient_id: int
