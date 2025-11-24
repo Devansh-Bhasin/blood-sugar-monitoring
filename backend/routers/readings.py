@@ -58,7 +58,8 @@ def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)
         event=reading.event,
         symptom=reading.symptom,
         notes=reading.notes,
-        category=category
+        category=category,
+        timestamp=reading.timestamp
     ))
 
     # After saving, check for abnormal readings in the last 7 days
