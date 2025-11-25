@@ -47,12 +47,10 @@ def get_db():
         # Admin-only: List all clinic staff
         @router.get("/all", response_model=list[schemas.ClinicStaff])
         def list_all_clinic_staff(db: Session = Depends(get_db), Authorization: str = Header(None)):
-    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
-    if not user_id or not is_admin(db, user_id):
-        raise HTTPException(status_code=403, detail="Admin only")
-    return db.query(crud.models.ClinicStaff).all()
-    if not staff:
-        print(f"DEBUG /clinic_staff/me: No staff found for user_id {user_id}")
+            user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+            if not user_id or not is_admin(db, user_id):
+                raise HTTPException(status_code=403, detail="Admin only")
+            return db.query(crud.models.ClinicStaff).all()
         raise HTTPException(status_code=404, detail="Clinic staff not found")
     return staff
 
