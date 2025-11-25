@@ -51,8 +51,6 @@ def get_db():
             if not user_id or not is_admin(db, user_id):
                 raise HTTPException(status_code=403, detail="Admin only")
             return db.query(crud.models.ClinicStaff).all()
-        raise HTTPException(status_code=404, detail="Clinic staff not found")
-    return staff
 
 # Allow staff to update their profile
 from fastapi import Body
