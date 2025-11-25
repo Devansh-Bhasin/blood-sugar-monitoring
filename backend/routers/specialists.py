@@ -4,6 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Body
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
+from backend.utils import get_current_user_id
+def is_admin(db, user_id):
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    return user and user.role.lower() == "admin"
 
 router = APIRouter(prefix="/specialists", tags=["specialists"])
 
@@ -15,20 +19,8 @@ def get_db():
     finally:
         db.close()
 
-# Dummy token auth for demo (replace with real auth)
+## JWT helper now imported from utils
 
-# JWT-based user_id extraction
-import jwt
-def get_current_user_id(token: str):
-    if not token:
-        return None
-    JWT_SECRET = "supersecretkey"  # Should match login endpoint
-    JWT_ALGORITHM = "HS256"
-    try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return int(payload.get("sub"))
-    except Exception:
-        return None
 
 # Place after router and get_db definitions
 @router.get("/patients", response_model=list[schemas.Patient])
@@ -43,6 +35,33 @@ def get_my_patients(db: Session = Depends(get_db), Authorization: str = Header(N
     patient_ids = [a.patient_id for a in assignments]
     patients = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id.in_(patient_ids)).all()
     return patients
+
+# Admin-only: Create specialist
+@router.post("/", response_model=schemas.Specialist)
+def create_specialist(specialist: schemas.SpecialistCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    # Actual creation logic
+    return crud.create_specialist(db, specialist)
+
+# Admin-only: Update specialist
+@router.put("/{specialist_id}", response_model=schemas.Specialist)
+def update_specialist(specialist_id: int, specialist: schemas.SpecialistCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    # Actual update logic
+    db_specialist = db.query(crud.models.Specialist).filter(crud.models.Specialist.specialist_id == specialist_id).first()
+    if not db_specialist:
+        raise HTTPException(status_code=404, detail="Specialist not found")
+    # Update fields
+    for field in ["specialist_code"]:
+        if hasattr(specialist, field):
+            setattr(db_specialist, field, getattr(specialist, field))
+    db.commit()
+    db.refresh(db_specialist)
+    return db_specialist
 
 
 def get_db():

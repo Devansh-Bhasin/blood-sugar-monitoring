@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from backend import crud, schemas
+from backend.utils import get_current_user_id
+def is_admin(db, user_id):
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    return user and user.role.lower() == "admin"
 
 
 router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
@@ -75,9 +79,28 @@ from fastapi import Header
 
 @router.post("/", response_model=schemas.ClinicStaff)
 def create_clinic_staff(staff: schemas.ClinicStaffCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
-    user_id = get_current_user_id(Authorization)
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
     if not user_id or not is_admin(db, user_id):
         raise HTTPException(status_code=403, detail="Admin only")
+    # Actual creation logic
+    return crud.create_clinic_staff(db, staff)
+
+# Admin-only: Update clinic staff
+@router.put("/{staff_id}", response_model=schemas.ClinicStaff)
+def update_clinic_staff(staff_id: int, staff: schemas.ClinicStaffCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    db_staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == staff_id).first()
+    if not db_staff:
+        raise HTTPException(status_code=404, detail="Clinic staff not found")
+    # Update fields
+    for field in ["full_name", "email", "phone", "profile_image"]:
+        if hasattr(staff, field):
+            setattr(db_staff, field, getattr(staff, field))
+    db.commit()
+    db.refresh(db_staff)
+    return db_staff
     return crud.create_clinic_staff(db, staff)
 
 @router.get("/", response_model=list[schemas.ClinicStaff])

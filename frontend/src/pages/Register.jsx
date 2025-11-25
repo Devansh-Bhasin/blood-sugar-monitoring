@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("patient");
+  // Only allow patient registration
+  const role = "patient";
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profileImage, setProfileImage] = useState("");
@@ -29,28 +30,14 @@ const Register = () => {
         phone,
         profile_image: profileImage
       };
-      if (role === "patient") {
-        const patientData = {
-          user: userData,
-          health_care_number: healthCareNumber,
-          date_of_birth: dateOfBirth,
-          preferred_unit: preferredUnit
-        };
-        await api.post("/patients/", patientData);
-      } else if (role === "specialist") {
-        const specialistData = {
-          user: userData,
-          specialist_code: ""
-        };
-        await api.post("/specialists/", specialistData);
-      } else if (role === "clinic_staff") {
-        const staffData = {
-          user: userData
-        };
-        await api.post("/clinic_staff/", staffData);
-      } else {
-        await api.post("/users/", userData);
-      }
+      // Only allow patient registration
+      const patientData = {
+        user: userData,
+        health_care_number: healthCareNumber,
+        date_of_birth: dateOfBirth,
+        preferred_unit: preferredUnit
+      };
+      await api.post("/patients/", patientData);
       alert("Registration successful");
       window.dispatchEvent(new Event("roleChanged"));
       navigate("/login");
@@ -76,6 +63,7 @@ const Register = () => {
           </div>
         )}
         <form onSubmit={handleRegister}>
+          {/* Only patient registration fields shown */}
           <input
             type="email"
             placeholder="Email"
