@@ -1,46 +1,21 @@
 
-# ...existing code...
 
-router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
-
-# Admin-only: List all clinic staff
-@router.get("/all", response_model=list[schemas.ClinicStaff])
-def list_all_clinic_staff(db: Session = Depends(get_db), Authorization: str = Header(None)):
-    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
-    if not user_id or not is_admin(db, user_id):
-        raise HTTPException(status_code=403, detail="Admin only")
-    return db.query(crud.models.ClinicStaff).all()
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header, Body
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.utils import get_current_user_id
-def is_admin(db, user_id):
-    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
-    return user and user.role.lower() == "admin"
-
-
-router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
-
 from backend.database import SessionLocal
+
 def get_db():
     db = SessionLocal()
     try:
-        from fastapi import APIRouter, Depends, HTTPException, Header
-        from sqlalchemy.orm import Session
-        from backend import crud, schemas
-        from backend.utils import get_current_user_id
-        from backend.database import SessionLocal
+        yield db
+    finally:
+        db.close()
 
-        def get_db():
-            db = SessionLocal()
-            try:
-                yield db
-            finally:
-                db.close()
-
-        def is_admin(db, user_id):
-            user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
-            return user and user.role.lower() == "admin"
+def is_admin(db, user_id):
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    return user and user.role.lower() == "admin"
 
 router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
 
