@@ -77,13 +77,11 @@ const Login = () => {
       console.log('localStorage.role:', localStorage.getItem('role'));
       alert("Login successful");
       if (role === "admin") {
-        navigate("/admin");
+        navigate("/admin-dashboard");
       } else if (role === "staff" || role === "clinic_staff") {
         navigate("/staff-dashboard");
       } else if (role === "specialist") {
         navigate("/specialist-dashboard");
-      } else if (role === "admin") {
-        navigate("/admin-dashboard");
       } else {
         navigate("/patient-dashboard");
       }

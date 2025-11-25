@@ -6,7 +6,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   // Only allow patient registration
-  const role = "patient";
+    const [role] = useState("patient");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profileImage, setProfileImage] = useState("");

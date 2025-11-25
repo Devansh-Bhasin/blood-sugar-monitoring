@@ -17,7 +17,7 @@ const Register = () => {
   // Patient-specific fields
   const [healthCareNumber, setHealthCareNumber] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
-  const [preferredUnit, setPreferredUnit] = useState("mmol_L");
+    const [role] = useState("patient");
   const navigate = useNavigate();
 
   const [errorMessage, setErrorMessage] = useState("");
@@ -41,28 +41,13 @@ const Register = () => {
       if (role === "patient") {
         const patientData = {
           user: userData,
+        const patientData = {
+          user: userData,
           health_care_number: healthCareNumber,
           date_of_birth: dateOfBirth,
           preferred_unit: preferredUnit
         };
         await api.post("/patients/", patientData);
-      } else if (role === "specialist") {
-        const specialistData = {
-          user: userData,
-          specialist_code: ""
-        };
-        await api.post("/specialists/", specialistData);
-      } else if (role === "clinic_staff") {
-        const staffData = {
-          user: userData
-        };
-        await api.post("/clinic_staff/", staffData);
-      } else {
-        await api.post("/users/", userData);
-      }
-<<<<<<< HEAD
-========
-      const patientData = {
         user: userData,
         health_care_number: healthCareNumber,
         date_of_birth: dateOfBirth,
