@@ -42,15 +42,15 @@ def get_db():
             user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
             return user and user.role.lower() == "admin"
 
-        router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
+router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
 
-        # Admin-only: List all clinic staff
-        @router.get("/all", response_model=list[schemas.ClinicStaff])
-        def list_all_clinic_staff(db: Session = Depends(get_db), Authorization: str = Header(None)):
-            user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
-            if not user_id or not is_admin(db, user_id):
-                raise HTTPException(status_code=403, detail="Admin only")
-            return db.query(crud.models.ClinicStaff).all()
+# Admin-only: List all clinic staff
+@router.get("/all", response_model=list[schemas.ClinicStaff])
+def list_all_clinic_staff(db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    return db.query(crud.models.ClinicStaff).all()
 
 # Allow staff to update their profile
 from fastapi import Body
