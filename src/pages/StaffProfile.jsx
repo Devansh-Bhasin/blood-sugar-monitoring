@@ -1,5 +1,8 @@
 // ...restored code from backup...
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
@@ -8,8 +11,11 @@ const StaffProfile = () => {
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
+<<<<<<< HEAD
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '' });
+=======
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,6 +52,7 @@ const StaffProfile = () => {
     });
   };
 
+<<<<<<< HEAD
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordForm({ ...passwordForm, [name]: value });
@@ -69,6 +76,8 @@ const StaffProfile = () => {
     }
   };
 
+=======
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -90,6 +99,10 @@ const StaffProfile = () => {
     }
   };
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   if (!profile) return <div>Loading...</div>;
 
   const user = profile.user || {};
@@ -113,6 +126,7 @@ const StaffProfile = () => {
           <button onClick={() => setEditMode(false)} style={{ marginLeft: "1rem", background: '#eee', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Cancel</button>
         </div>
       ) : (
+<<<<<<< HEAD
         <div style={{ color: '#333', fontSize: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ marginBottom: 8 }}><b>Name:</b> {user.full_name}</div>
           <div style={{ marginBottom: 8 }}><b>Email:</b> {user.email}</div>
@@ -138,6 +152,16 @@ const StaffProfile = () => {
           <button onClick={() => setShowPasswordChange(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.5rem' }}>Change Password</button>
         )}
       </div>
+=======
+        <div style={{ color: '#333', fontSize: 16 }}>
+          <div style={{ marginBottom: 8 }}><b>Name:</b> {user.full_name}</div>
+          <div style={{ marginBottom: 8 }}><b>Email:</b> {user.email}</div>
+          <div style={{ marginBottom: 8 }}><b>Phone:</b> {user.phone}</div>
+          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!user.profile_image ? "None" : user.profile_image}</div>
+          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Edit Profile</button>
+        </div>
+      )}
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
     </div>
   );
 };

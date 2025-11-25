@@ -25,7 +25,17 @@ def list_thresholds(db: Session = Depends(get_db)):
 def get_patient_threshold(patient_id: int, db: Session = Depends(get_db)):
     threshold = crud.get_threshold_for_patient(db, patient_id)
     if not threshold:
-        raise HTTPException(status_code=404, detail="Threshold not set for this patient.")
+        # Return a default threshold if none exists for this patient
+        import datetime
+        return {
+            "threshold_id": 0,
+            "patient_id": patient_id,
+            "min_normal": 70.0,
+            "max_normal": 130.0,
+            "max_borderline": 180.0,
+            "configured_by": None,
+            "updated_at": datetime.datetime.utcnow(),
+        }
     return threshold
 
 @router.post("/sample", response_model=schemas.Threshold)

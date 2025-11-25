@@ -118,8 +118,13 @@ def get_my_specialist_profile(db: Session = Depends(get_db), Authorization: str 
         alerts=[]
     )
 
+from fastapi import Header
+
 @router.post("/", response_model=schemas.Specialist)
-def create_specialist(specialist: schemas.SpecialistCreate, db: Session = Depends(get_db)):
+def create_specialist(specialist: schemas.SpecialistCreate, db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
     return crud.create_specialist(db, specialist)
 
 @router.get("/", response_model=list[schemas.Specialist])

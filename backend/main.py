@@ -8,7 +8,6 @@ import os
 # CORS middleware must be added before anything else
 app = FastAPI(title="Online Blood Sugar Monitoring System")
 
-
 # Minimal, production-safe CORS config
 allow_origins = ["https://devansh-bhasin.github.io"]
 allow_credentials = True
@@ -21,12 +20,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from backend.database import Base, engine
 
-from .database import Base, engine
-
-from .routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient, appointments
+from backend.routers import patients, readings, specialists, auth, users, clinic_staff, feedback, thresholds, alerts, reports, specialist_patient, appointments
 try:
-    from .routers import admin
+    from backend.routers import admin
     print("[MAIN] Imported admin router")
 except Exception as e:
     print("[MAIN] Failed to import admin router:", e)
@@ -36,9 +34,7 @@ from fastapi.responses import Response
 def options_auth_login():
     return Response(status_code=204)
 
-
 from fastapi.requests import Request
-
 
 api_prefix = "/api"
 app.include_router(users.router, prefix=api_prefix)

@@ -54,14 +54,10 @@ def generate_report(
     db: Session = Depends(get_db),
     Authorization: str = Header(None)
 ):
-    # Admin check
-    token = Authorization.replace("Bearer ", "") if Authorization else None
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        user_id = payload.get("user_id")
-    except Exception:
-        raise HTTPException(status_code=403, detail="Invalid token")
-    if not is_admin(db, user_id):
+    # Admin check: use get_user_from_jwt for consistency with other admin endpoints
+    from backend.routers.jwt_utils import get_user_from_jwt
+    user = get_user_from_jwt(Authorization, db)
+    if user.role.upper() != "ADMIN":
         raise HTTPException(status_code=403, detail="Admin only")
 
     today = datetime.date.today()
@@ -109,21 +105,25 @@ def generate_report(
             "max": max_v
         })
 
-    # Top food/activity triggers (AI insights)
-    ai_insights = db.query(crud.models.AIInsight).filter(
-        crud.models.AIInsight.created_at >= start,
-        crud.models.AIInsight.created_at <= end
+    # Top food/activity triggers (AI logic: >=3 abnormal readings)
+    readings_in_period = db.query(crud.models.Reading).filter(
+        crud.models.Reading.timestamp >= start,
+        crud.models.Reading.timestamp <= end
     ).all()
-    from collections import Counter
-    food_triggers = Counter()
-    activity_triggers = Counter()
-    for insight in ai_insights:
-        if insight.trigger_type == "food" and insight.trigger_value:
-            food_triggers[insight.trigger_value] += insight.abnormal_count
-        if insight.trigger_type == "activity" and insight.trigger_value:
-            activity_triggers[insight.trigger_value] += insight.abnormal_count
-    top_foods = food_triggers.most_common(5)
-    top_activities = activity_triggers.most_common(5)
+    from collections import Counter, defaultdict
+    food_counter = Counter()
+    activity_counter = Counter()
+    for r in readings_in_period:
+        if r.category == "Abnormal" and r.food_intake:
+            food_counter[r.food_intake] += 1
+        if r.category == "Abnormal" and r.activities:
+            activity_counter[r.activities] += 1
+    # Only include triggers with >=3 abnormal readings
+    top_foods = [(food, count) for food, count in food_counter.items() if count >= 3]
+    top_activities = [(act, count) for act, count in activity_counter.items() if count >= 3]
+    # Sort by count descending, limit to 5
+    top_foods = sorted(top_foods, key=lambda x: -x[1])[:5]
+    top_activities = sorted(top_activities, key=lambda x: -x[1])[:5]
 
     return {
         "period": period_label,

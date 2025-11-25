@@ -58,7 +58,8 @@ def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)
         event=reading.event,
         symptom=reading.symptom,
         notes=reading.notes,
-        category=category
+        category=category,
+        timestamp=reading.timestamp
     ))
 
     # After saving, check for abnormal readings in the last 7 days
@@ -69,7 +70,7 @@ def create_reading(reading: schemas.ReadingCreate, db: Session = Depends(get_db)
         crud.models.Reading.timestamp >= seven_days_ago
     ).all()
     abnormal_count = len(abnormal_readings)
-    if abnormal_count > 3:
+    if abnormal_count >= 3:
         # Check if an alert for this window already exists to avoid duplicates
         existing_alert = db.query(crud.models.Alert).filter(
             crud.models.Alert.patient_id == reading.patient_id,
@@ -156,6 +157,10 @@ def delete_reading(reading_id: int, db: Session = Depends(get_db)):
     db_reading = db.query(crud.models.Reading).filter(crud.models.Reading.reading_id == reading_id).first()
     if not db_reading:
         raise HTTPException(status_code=404, detail="Reading not found")
+    # Delete all feedback associated with this reading first
+    feedbacks = db.query(crud.models.Feedback).filter(crud.models.Feedback.reading_id == reading_id).all()
+    for fb in feedbacks:
+        db.delete(fb)
     db.delete(db_reading)
     db.commit()
     return {"detail": "Reading deleted"}

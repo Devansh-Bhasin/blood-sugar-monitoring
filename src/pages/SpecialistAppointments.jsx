@@ -14,6 +14,7 @@ const SpecialistAppointments = () => {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+<<<<<<< HEAD
 		const token = localStorage.getItem("token");
 		const specialistId = localStorage.getItem("specialist_id");
 		if (!token || !specialistId) {
@@ -22,6 +23,16 @@ const SpecialistAppointments = () => {
 		}
 		const fetchAppointments = async () => {
 			setLoading(true);
+=======
+		const fetchAppointments = async () => {
+			setLoading(true);
+			const token = localStorage.getItem("token");
+			const specialistId = localStorage.getItem("specialist_id");
+			if (!token || !specialistId) {
+				navigate("/login");
+				return;
+			}
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
 			try {
 				const res = await api.get(`/appointments/`, { params: { specialist_id: specialistId }, headers: { Authorization: `Bearer ${token}` } });
 				setAppointments(res.data);

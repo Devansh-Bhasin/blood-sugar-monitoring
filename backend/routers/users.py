@@ -3,7 +3,14 @@ from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
 
+# Define router before any usage
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+# Debug endpoint to confirm router is active
+@router.get("/debug")
+def debug_users_router():
+    return {"status": "users router active"}
 
 from backend.database import SessionLocal
 def get_db():
@@ -59,9 +66,19 @@ def is_admin(db: Session, user_id: int):
 
 @router.get("/me", response_model=schemas.User)
 def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
-    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    token = None
+    if Authorization:
+        parts = Authorization.split()
+        if len(parts) == 2 and parts[0].lower() == "bearer":
+            token = parts[1]
+    print(f"[DEBUG /me] Raw Authorization header: {Authorization}")
+    print(f"[DEBUG /me] Extracted token: {token}")
+    user_id = get_current_user_id(token)
+    print(f"[DEBUG /me] Extracted user_id from JWT: {user_id}")
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    print(f"[DEBUG /me] User found in DB: {user}")
     if not user:
+        print(f"[DEBUG /me] No user found for user_id: {user_id}")
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
@@ -79,57 +96,60 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db), Authorization: s
 # Delete user (admin only)
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
-    # Delete all SpecialistPatient records where user is a patient
-    if hasattr(crud.models, 'SpecialistPatient'):
-        db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.patient_id == user_id).delete()
-    # Delete all Appointments where user is a patient
-    if hasattr(crud.models, 'Appointment'):
-        db.query(crud.models.Appointment).filter(crud.models.Appointment.patient_id == user_id).delete()
+    # Admin check
     admin_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
     if not is_admin(db, admin_id):
         raise HTTPException(status_code=403, detail="Admin only")
-    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
 
-    # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
-    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
-    # Always delete all specialist records (and related feedback/alerts) before deleting user
-    # Delete all SpecialistPatient records where user is a specialist or assigned patient
+    # Delete all SpecialistPatient records where user is a patient or specialist
     if hasattr(crud.models, 'SpecialistPatient'):
         db.query(crud.models.SpecialistPatient).filter(
-            (crud.models.SpecialistPatient.specialist_id == user_id) |
-            (crud.models.SpecialistPatient.patient_id == user_id)
+            (crud.models.SpecialistPatient.patient_id == user_id) |
+            (crud.models.SpecialistPatient.specialist_id == user_id)
         ).delete()
+
+    # Delete all Appointments where user is a patient or specialist
+    if hasattr(crud.models, 'Appointment'):
+        db.query(crud.models.Appointment).filter(
+            (crud.models.Appointment.patient_id == user_id) |
+            (crud.models.Appointment.specialist_id == user_id)
+        ).delete()
+
+    # Delete related patient record(s) and their dependencies
+    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
+    if patient:
+        db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == user_id).delete()
+        db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == user_id).delete()
+        db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == user_id).delete()
+        db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == user_id).delete()
+        if hasattr(crud.models, 'AIInsight'):
+            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == user_id).delete()
+        db.delete(patient)
+
+    # Delete related specialist record(s) and their dependencies
     specialists = db.query(crud.models.Specialist).filter(crud.models.Specialist.user_id == user_id).all()
     for specialist in specialists:
         db.query(crud.models.Feedback).filter(crud.models.Feedback.specialist_id == specialist.specialist_id).delete()
         db.query(crud.models.Alert).filter(crud.models.Alert.specialist_id == specialist.specialist_id).delete()
+        if hasattr(crud.models, 'AIInsight'):
+            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.specialist_id == specialist.specialist_id).delete()
         db.delete(specialist)
 
-    # If user is a patient, delete readings, feedback, alerts, thresholds, etc.
-    patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
-    if patient:
-        readings = db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == patient.patient_id).all()
-        for reading in readings:
-            db.delete(reading)
-        db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == patient.patient_id).delete()
-        db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == patient.patient_id).delete()
-        db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == patient.patient_id).delete()
-        if hasattr(crud.models, 'AIInsight'):
-            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == patient.patient_id).delete()
-        db.delete(patient)
+    # Delete related clinic_staff rows if they exist
+    staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
+    for link in staff_links:
+        db.delete(link)
 
-    # If user is clinic staff, delete staff record and thresholds
-    staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
-    if staff:
-        db.query(crud.models.Threshold).filter(crud.models.Threshold.configured_by == staff.staff_id).delete()
-        db.delete(staff)
+    # Delete thresholds configured by staff
+    db.query(crud.models.Threshold).filter(crud.models.Threshold.configured_by == user_id).delete()
 
     # Commit after deleting related records to avoid FK constraint errors
     db.commit()
 
     # Finally, delete the user
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
     db.delete(user)
     db.commit()
     return

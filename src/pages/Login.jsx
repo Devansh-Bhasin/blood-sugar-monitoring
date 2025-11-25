@@ -15,11 +15,14 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
+<<<<<<< HEAD
       // Clear all user-related IDs before setting new ones
       localStorage.removeItem("patient_id");
       localStorage.removeItem("specialist_id");
       localStorage.removeItem("staff_id");
 
+=======
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       const res = await api.post("/auth/login", { email, password }, {
         headers: { 'Content-Type': 'application/json' }
       });
@@ -68,9 +71,12 @@ const Login = () => {
             } catch {
               localStorage.setItem("specialist_id", payload.sub);
             }
+<<<<<<< HEAD
           }
           if (role === "staff") {
             localStorage.setItem("staff_id", payload.sub);
+=======
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
           }
         }
       }
@@ -83,6 +89,8 @@ const Login = () => {
         navigate("/staff-dashboard");
       } else if (role === "specialist") {
         navigate("/specialist-dashboard");
+      } else if (role === "admin") {
+        navigate("/admin-dashboard");
       } else {
         navigate("/patient-dashboard");
       }

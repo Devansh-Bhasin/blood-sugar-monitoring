@@ -14,9 +14,29 @@ def get_db():
     finally:
         db.close()
 
+from sqlalchemy.exc import IntegrityError
+
 @router.post("/", response_model=schemas.Patient)
 def create_patient(patient: schemas.PatientCreate, db: Session = Depends(get_db)):
-    return crud.create_patient(db, patient)
+    # Check for duplicate email
+    existing_user = db.query(crud.models.User).filter(crud.models.User.email == patient.user.email).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    # Check for duplicate health care number
+    if patient.health_care_number:
+        existing_hcn = db.query(crud.models.Patient).filter(crud.models.Patient.health_care_number == patient.health_care_number).first()
+        if existing_hcn:
+            raise HTTPException(status_code=400, detail="Health care number already exists")
+    try:
+        return crud.create_patient(db, patient)
+    except IntegrityError as e:
+        db.rollback()
+        # Defensive: check which field caused the error
+        if 'users_email_key' in str(e.orig):
+            raise HTTPException(status_code=400, detail="Email already registered")
+        if 'patients_health_care_number_key' in str(e.orig):
+            raise HTTPException(status_code=400, detail="Health care number already exists")
+        raise HTTPException(status_code=400, detail="Registration failed: duplicate or invalid data")
 
 @router.get("/", response_model=list[schemas.Patient])
 def list_patients(db: Session = Depends(get_db)):

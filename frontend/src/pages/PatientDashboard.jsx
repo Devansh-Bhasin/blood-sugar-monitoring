@@ -13,7 +13,11 @@ import {
 } from "chart.js";
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+<<<<<<< HEAD
 function ReadingItem({ reading, refreshReadings }) {
+=======
+function ReadingItem({ reading, refreshReadings, feedback }) {
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ ...reading });
 
@@ -43,6 +47,12 @@ function ReadingItem({ reading, refreshReadings }) {
     }
   };
 
+<<<<<<< HEAD
+=======
+  // Find feedback for this reading
+  const readingFeedback = feedback.find(f => f.reading_id === reading.reading_id);
+
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   return (
     <div style={{ border: "1px solid gray", margin: "1rem", padding: "1rem" }}>
       {editMode ? (
@@ -63,6 +73,14 @@ function ReadingItem({ reading, refreshReadings }) {
           <p>Food: {reading.food_intake}</p>
           <p>Activities: {reading.activities}</p>
           <p>Notes: {reading.notes}</p>
+<<<<<<< HEAD
+=======
+          {readingFeedback && (
+            <div style={{ marginTop: '0.5rem', background: '#e3f2fd', borderRadius: 6, padding: '0.5rem 1rem' }}>
+              <b>Specialist Feedback:</b> {readingFeedback.comments}
+            </div>
+          )}
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
           <button onClick={() => setEditMode(true)}>Edit</button>
           <button onClick={handleDelete} style={{ marginLeft: "1rem" }}>Delete</button>
         </div>
@@ -160,7 +178,11 @@ const PatientDashboard = () => {
       <div style={{ maxWidth: 700, width: "100%" }}>
         <h3 style={{ marginBottom: "1rem" }}>Reading Details</h3>
         {readings.map((r) => (
+<<<<<<< HEAD
           <ReadingItem key={r.reading_id} reading={r} refreshReadings={() => window.location.reload()} />
+=======
+          <ReadingItem key={r.reading_id} reading={r} refreshReadings={() => window.location.reload()} feedback={feedback} />
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
         ))}
       </div>
     </div>

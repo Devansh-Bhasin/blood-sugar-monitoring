@@ -9,6 +9,7 @@ const API_BASE_URL = 'https://blood-sugar-monitoring-system-3c4cc007e08e.herokua
 
 function AdminDashboard() {
   const navigate = window.reactRouterNavigate || ((path) => { window.location.href = path; });
+<<<<<<< HEAD
   const [users, setUsers] = useState([]);
   const [reports, setReports] = useState([]);
   const [selectedReportType, setSelectedReportType] = useState('monthly');
@@ -18,10 +19,13 @@ function AdminDashboard() {
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(true);
 
+=======
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/login");
+<<<<<<< HEAD
       return;
     }
     // Check if user is admin
@@ -50,15 +54,41 @@ function AdminDashboard() {
     } catch (err) {
       setError("Failed to fetch users. Please try again later.");
       setUsers([]);
+=======
+    }
+  }, []);
+  const [users, setUsers] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [selectedReportType, setSelectedReportType] = useState('monthly');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchReports(selectedReportType);
+  }, [selectedReportType]);
+
+  const fetchUsers = async () => {
+    try {
+  const res = await axios.get(`${API_BASE_URL}/users/`, { withCredentials: true });
+      setUsers(res.data);
+    } catch (err) {
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       console.error('Error fetching users:', err);
     }
   };
 
 
   const deleteUser = async (userId) => {
+<<<<<<< HEAD
     setError("");
     if (userId === undefined || userId === null || userId === "") {
       setError('Invalid user ID');
+=======
+    console.log('Attempting to delete user:', userId);
+    if (userId === undefined || userId === null || userId === "") {
+      alert('Invalid user ID');
+      console.error('deleteUser called with invalid userId:', userId);
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       return;
     }
     if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -69,13 +99,20 @@ function AdminDashboard() {
         withCredentials: true
       });
       setUsers(users.filter(u => u.user_id !== userId));
+<<<<<<< HEAD
     } catch (err) {
       setError('Failed to delete user.');
+=======
+      console.log('User deleted:', userId);
+    } catch (err) {
+      alert('Failed to delete user.');
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       console.error('Delete user error:', err, 'userId:', userId);
     }
   };
 
 
+<<<<<<< HEAD
   const fetchReports = async (type, year, month) => {
     setLoading(true);
     setError("");
@@ -87,6 +124,19 @@ function AdminDashboard() {
         params.month = month;
       } else if (type === 'yearly') {
         params.year = year;
+=======
+  const fetchReports = async (type) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const today = new Date();
+      let params = { period_type: type };
+      if (type === 'monthly') {
+        params.year = today.getFullYear();
+        params.month = today.getMonth() + 1;
+      } else if (type === 'yearly') {
+        params.year = today.getFullYear();
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       }
       const res = await axios.get(`${API_BASE_URL}/reports/generate`, {
         params,
@@ -95,9 +145,14 @@ function AdminDashboard() {
       });
       setReports([res.data]);
     } catch (err) {
+<<<<<<< HEAD
       setError("Failed to fetch reports. Please try again later.");
       setReports([]);
       console.error('Error fetching reports:', err);
+=======
+      console.error('Error fetching reports:', err);
+      setReports([]);
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
     }
     setLoading(false);
   };
@@ -122,6 +177,7 @@ function AdminDashboard() {
     pdf.save(`admin_report_${reports[0]?.period || 'report'}.pdf`);
   };
 
+<<<<<<< HEAD
   // Print report
   const handlePrint = () => {
     if (!reportRef.current) return;
@@ -151,6 +207,11 @@ function AdminDashboard() {
     <div className="dashboard-container" style={{ maxWidth: 1000, margin: '0 auto', fontFamily: 'Segoe UI, Arial, sans-serif' }}>
       <h2 style={{ textAlign: 'center', margin: '24px 0 16px' }}>Admin Dashboard</h2>
       {error && <div style={{ color: '#c00', marginBottom: 16, textAlign: 'center' }}>{error}</div>}
+=======
+  return (
+    <div className="dashboard-container" style={{ maxWidth: 1000, margin: '0 auto', fontFamily: 'Segoe UI, Arial, sans-serif' }}>
+      <h2 style={{ textAlign: 'center', margin: '24px 0 16px' }}>Admin Dashboard</h2>
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, marginBottom: 32, boxShadow: '0 2px 8px #0001' }}>
         <h3>User Management</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 12 }}>
@@ -179,13 +240,18 @@ function AdminDashboard() {
         </table>
       </section>
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, boxShadow: '0 2px 8px #0001' }}>
+<<<<<<< HEAD
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+=======
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
           <h3 style={{ flex: 1 }}>Reports</h3>
           <label style={{ marginRight: 8 }}>Report Type:</label>
           <select value={selectedReportType} onChange={e => setSelectedReportType(e.target.value)} style={{ marginRight: 16, padding: 4 }}>
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
           </select>
+<<<<<<< HEAD
           {selectedReportType === 'monthly' && (
             <>
               <label style={{ marginRight: 8 }}>Month:</label>
@@ -216,6 +282,12 @@ function AdminDashboard() {
                 Print
               </button>
             </>
+=======
+          {reports.length > 0 && (
+            <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
+              Download PDF
+            </button>
+>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
           )}
         </div>
         {loading ? <p>Loading reports...</p> : (
