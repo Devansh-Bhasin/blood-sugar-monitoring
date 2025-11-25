@@ -102,35 +102,26 @@ const Register = () => {
             onChange={(e) => setProfileImage(e.target.value)}
             style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}
           />
-          <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}>
-            <option value="patient">Patient</option>
-            <option value="specialist">Specialist</option>
-            <option value="clinic_staff">Clinic Staff</option>
+          <input
+            type="text"
+            placeholder="Health Care Number"
+            value={healthCareNumber}
+            onChange={e => setHealthCareNumber(e.target.value)}
+            required
+            style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}
+          />
+          <input
+            type="date"
+            placeholder="Date of Birth"
+            value={dateOfBirth}
+            onChange={e => setDateOfBirth(e.target.value)}
+            required
+            style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}
+          />
+          <select value={preferredUnit} onChange={e => setPreferredUnit(e.target.value)} style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}>
+            <option value="mmol_L">mmol/L</option>
+            <option value="mg_dL">mg/dL</option>
           </select>
-          {role === "patient" && (
-            <>
-              <input
-                type="text"
-                placeholder="Health Care Number"
-                value={healthCareNumber}
-                onChange={e => setHealthCareNumber(e.target.value)}
-                required
-                style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}
-              />
-              <input
-                type="date"
-                placeholder="Date of Birth"
-                value={dateOfBirth}
-                onChange={e => setDateOfBirth(e.target.value)}
-                required
-                style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}
-              />
-              <select value={preferredUnit} onChange={e => setPreferredUnit(e.target.value)} style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}>
-                <option value="mmol_L">mmol/L</option>
-                <option value="mg_dL">mg/dL</option>
-              </select>
-            </>
-          )}
           <button type="submit" style={{ width: "100%", padding: "0.75rem", borderRadius: 8, background: "#1976d2", color: "#fff", fontWeight: 600, border: "none", marginTop: "1rem" }}>Register</button>
         </form>
       </div>
