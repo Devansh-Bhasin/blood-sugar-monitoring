@@ -44,6 +44,18 @@ def create_sample_user(db: Session = Depends(get_db)):
     return crud.create_user(db, sample)
 
 # Admin profile endpoints
+
+# Get current user's profile
+from fastapi import Header
+from backend.crud import get_current_user_id
+
+@router.get("/me", response_model=schemas.User)
+def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 from fastapi import Header, Body
 import jwt
 from backend.models import User
