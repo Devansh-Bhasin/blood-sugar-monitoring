@@ -79,12 +79,12 @@ def get_user_by_id(user_id: int, db: Session = Depends(get_db), Authorization: s
 # Delete user (admin only)
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
-        # Delete all SpecialistPatient records where user is a patient
-        if hasattr(crud.models, 'SpecialistPatient'):
-            db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.patient_id == user_id).delete()
-        # Delete all Appointments where user is a patient
-        if hasattr(crud.models, 'Appointment'):
-            db.query(crud.models.Appointment).filter(crud.models.Appointment.patient_id == user_id).delete()
+    # Delete all SpecialistPatient records where user is a patient
+    if hasattr(crud.models, 'SpecialistPatient'):
+        db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.patient_id == user_id).delete()
+    # Delete all Appointments where user is a patient
+    if hasattr(crud.models, 'Appointment'):
+        db.query(crud.models.Appointment).filter(crud.models.Appointment.patient_id == user_id).delete()
     admin_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
     if not is_admin(db, admin_id):
         raise HTTPException(status_code=403, detail="Admin only")
