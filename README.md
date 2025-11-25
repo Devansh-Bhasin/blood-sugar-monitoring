@@ -1,4 +1,38 @@
-# Blood Sugar Monitoring
+
+# Blood Sugar Monitoring System
+
+**Group 3 - Final Project**
+
+## Project Overview
+This website is a full-stack blood sugar monitoring system for clinics, designed for Group 3. It enables patients, specialists, staff, and admins to manage blood sugar readings, appointments, and feedback in a secure, user-friendly environment.
+
+## Functional Overview
+- **Patients:**
+	- Register and log in
+	- Add and view blood sugar readings
+	- Receive alerts and AI-based feedback
+	- View dashboard and profile
+	- Book appointments with specialists
+- **Specialists:**
+	- Log in
+	- View assigned patients and their readings
+	- Provide feedback and suggestions
+	- Manage appointments
+	- View dashboard and profile
+- **Staff:**
+	- Log in
+	- Manage clinic appointments
+	- View dashboard and profile
+- **Admin:**
+	- Log in with credentials below
+	- Access admin dashboard
+	- Oversee system activity
+
+## Admin Credentials
+- **Email:** `admin@example.com`
+- **Password:** `admin123`
+
+## Quick Login Info
 
 A full-stack blood sugar monitoring system for clinics, built with FastAPI (Python) and React (JavaScript).
 
