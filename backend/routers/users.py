@@ -47,7 +47,7 @@ def create_sample_user(db: Session = Depends(get_db)):
 
 # Get current user's profile
 from fastapi import Header
-from backend.crud import get_current_user_id
+from backend.utils import get_current_user_id
 
 @router.get("/me", response_model=schemas.User)
 def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
