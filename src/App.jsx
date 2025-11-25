@@ -9,6 +9,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import SpecialistDashboard from "./pages/SpecialistDashboard";
 import StaffDashboard from "./pages/StaffDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminUserManagement from "./pages/AdminUserManagement";
 import AdminProfile from "./pages/AdminProfile";
 
 import PatientProfile from "./pages/PatientProfile";
@@ -35,6 +36,7 @@ const App = () => (
       <Route path="/specialist-dashboard" element={<SpecialistDashboard />} />
       <Route path="/staff-dashboard" element={<StaffDashboard />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/admin-users" element={<AdminUserManagement />} />
       <Route path="/admin-profile" element={<AdminProfile />} />
       <Route path="/add-reading" element={<AddReading />} />
       <Route path="/alerts" element={<Alerts />} />

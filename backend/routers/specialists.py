@@ -1,3 +1,10 @@
+# Admin-only: List all specialists
+@router.get("/all", response_model=list[schemas.Specialist])
+def list_all_specialists(db: Session = Depends(get_db), Authorization: str = Header(None)):
+    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+    if not user_id or not is_admin(db, user_id):
+        raise HTTPException(status_code=403, detail="Admin only")
+    return db.query(crud.models.Specialist).all()
 
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Body
