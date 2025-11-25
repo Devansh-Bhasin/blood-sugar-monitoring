@@ -25,32 +25,32 @@ from backend.database import SessionLocal
 def get_db():
     db = SessionLocal()
     try:
-        yield db
-    finally:
-        db.close()
+        from fastapi import APIRouter, Depends, HTTPException, Header
+        from sqlalchemy.orm import Session
+        from backend import crud, schemas
+        from backend.utils import get_current_user_id
+        from backend.database import SessionLocal
 
-# Dummy token auth for demo (replace with real auth)
-import jwt
-JWT_SECRET = "supersecretkey"  # Must match the value in auth.py
-def get_current_user_id(token: str):
-    if not token:
-        return None
-    try:
-        # Remove 'Bearer ' if present
-        if token.startswith("Bearer "):
-            token = token[len("Bearer "):]
-        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-        return int(payload.get("sub"))
-    except Exception as e:
-        print(f"JWT decode error: {e}")
-        return None
+        def get_db():
+            db = SessionLocal()
+            try:
+                yield db
+            finally:
+                db.close()
 
-from fastapi import Header
+        def is_admin(db, user_id):
+            user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+            return user and user.role.lower() == "admin"
 
-@router.get("/me", response_model=schemas.ClinicStaff)
-def get_my_clinic_staff_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
-    print(f"DEBUG /clinic_staff/me Authorization header: {Authorization}")
-    user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+        router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
+
+        # Admin-only: List all clinic staff
+        @router.get("/all", response_model=list[schemas.ClinicStaff])
+        def list_all_clinic_staff(db: Session = Depends(get_db), Authorization: str = Header(None)):
+            user_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
+            if not user_id or not is_admin(db, user_id):
+                raise HTTPException(status_code=403, detail="Admin only")
+            return db.query(crud.models.ClinicStaff).all()
     print(f"DEBUG /clinic_staff/me parsed user_id: {user_id}")
     staff = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).first()
     print(f"DEBUG /clinic_staff/me staff query result: {staff}")

@@ -1,8 +1,16 @@
+
 from fastapi import APIRouter, Depends, HTTPException, Header, Body
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
 from backend.utils import get_current_user_id
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 def is_admin(db, user_id):
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
@@ -17,18 +25,6 @@ def list_all_specialists(db: Session = Depends(get_db), Authorization: str = Hea
     if not user_id or not is_admin(db, user_id):
         raise HTTPException(status_code=403, detail="Admin only")
     return db.query(crud.models.Specialist).all()
-    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
-    return user and user.role.lower() == "admin"
-
-router = APIRouter(prefix="/specialists", tags=["specialists"])
-
-from backend.database import SessionLocal
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 ## JWT helper now imported from utils
 
