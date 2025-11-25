@@ -75,6 +75,10 @@ def get_clinic_staff(db: Session):
 
 # --- Reading CRUD ---
 def create_reading(db: Session, reading: schemas.ReadingCreate):
+    import datetime
+    ts = getattr(reading, "timestamp", None)
+    if ts is None:
+        ts = datetime.datetime.utcnow()
     db_reading = models.Reading(
         patient_id=reading.patient_id,
         value=reading.value,
@@ -83,7 +87,7 @@ def create_reading(db: Session, reading: schemas.ReadingCreate):
         food_intake=reading.food_intake,
         activities=reading.activities,
         notes=reading.notes,
-        timestamp=datetime.datetime.utcnow()
+        timestamp=ts
     )
     db.add(db_reading)
     db.commit()
