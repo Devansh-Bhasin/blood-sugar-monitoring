@@ -1,7 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Body
 from sqlalchemy.orm import Session
 from backend import crud, schemas
 from backend.database import SessionLocal
+from backend.utils import get_current_user_id
+def is_admin(db: Session, user_id: int):
+    user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
+    return user and user.role.lower() == "admin"
 
 # Define router before any usage
 router = APIRouter(prefix="/users", tags=["users"])
@@ -46,8 +50,7 @@ def create_sample_user(db: Session = Depends(get_db)):
 # Admin profile endpoints
 
 # Get current user's profile
-from fastapi import Header
-from backend.utils import get_current_user_id
+
 
 @router.get("/me", response_model=schemas.User)
 def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
@@ -56,45 +59,12 @@ def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Head
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
-from fastapi import Header, Body
-import jwt
-from backend.models import User
-from fastapi import Request
-from backend.database import SessionLocal
-from os import getenv
-SECRET_KEY = getenv("SECRET_KEY", "secret")
-def get_current_user_id(token: str):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return payload.get("user_id")
-    except Exception:
-        return None
-
-def is_admin(db: Session, user_id: int):
-    user = db.query(User).filter(User.user_id == user_id).first()
-    return user and user.role.lower() == "admin"
-# Admin profile endpoints
 
 
-@router.get("/me", response_model=schemas.User)
-def get_my_user_profile(db: Session = Depends(get_db), Authorization: str = Header(None)):
-    token = None
-    if Authorization:
-        parts = Authorization.split()
-        if len(parts) == 2 and parts[0].lower() == "bearer":
-            token = parts[1]
-    print(f"[DEBUG /me] Raw Authorization header: {Authorization}")
-    print(f"[DEBUG /me] Extracted token: {token}")
-    user_id = get_current_user_id(token)
-    print(f"[DEBUG /me] Extracted user_id from JWT: {user_id}")
     user = db.query(crud.models.User).filter(crud.models.User.user_id == user_id).first()
-    print(f"[DEBUG /me] User found in DB: {user}")
-    if not user:
-        print(f"[DEBUG /me] No user found for user_id: {user_id}")
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+    return user and user.role.lower() == "admin"
 
-# Get user by id (admin only)
+
 @router.get("/{user_id}", response_model=schemas.User)
 def get_user_by_id(user_id: int, db: Session = Depends(get_db), Authorization: str = Header(None)):
     admin_id = get_current_user_id(Authorization.replace("Bearer ", "") if Authorization else None)
