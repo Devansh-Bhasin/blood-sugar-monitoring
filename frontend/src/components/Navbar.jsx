@@ -26,7 +26,8 @@ const Navbar = () => {
     { to: "/staff-profile", label: "Profile" }
   ];
   const adminLinks = [
-    { to: "/admin-dashboard", label: "Dashboard" }
+    { to: "/admin-dashboard", label: "Dashboard" },
+    { to: "/admin-user-management", label: "User Management" }
   ];
   let navLinks = [];
   if (role === "staff" || role === "clinic_staff") {
