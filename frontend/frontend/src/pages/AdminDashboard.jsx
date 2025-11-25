@@ -47,6 +47,7 @@ function AdminDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isAdmin, setIsAdmin] = useState(true);
+
   React.useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -79,16 +80,15 @@ function AdminDashboard() {
     } catch (err) {
       setError("Failed to fetch users. Please try again later.");
       setUsers([]);
+      console.error('Error fetching users:', err);
     }
   };
 
 
   const deleteUser = async (userId) => {
     setError("");
-    console.log('Attempting to delete user:', userId);
     if (userId === undefined || userId === null || userId === "") {
-      alert('Invalid user ID');
-      console.error('deleteUser called with invalid userId:', userId);
+      setError('Invalid user ID');
       return;
     }
     if (!window.confirm('Are you sure you want to delete this user?')) return;
@@ -99,25 +99,24 @@ function AdminDashboard() {
         withCredentials: true
       });
       setUsers(users.filter(u => u.user_id !== userId));
-      console.log('User deleted:', userId);
     } catch (err) {
-      alert('Failed to delete user.');
+      setError('Failed to delete user.');
       console.error('Delete user error:', err, 'userId:', userId);
     }
   };
 
 
-  const fetchReports = async (type) => {
+  const fetchReports = async (type, year, month) => {
     setLoading(true);
+    setError("");
     try {
       const token = localStorage.getItem('token');
-      const today = new Date();
       let params = { period_type: type };
       if (type === 'monthly') {
-        params.year = today.getFullYear();
-        params.month = today.getMonth() + 1;
+        params.year = year;
+        params.month = month;
       } else if (type === 'yearly') {
-        params.year = today.getFullYear();
+        params.year = year;
       }
       const res = await axios.get(`${API_BASE_URL}/reports/generate`, {
         params,
@@ -126,8 +125,9 @@ function AdminDashboard() {
       });
       setReports([res.data]);
     } catch (err) {
-      console.error('Error fetching reports:', err);
+      setError("Failed to fetch reports. Please try again later.");
       setReports([]);
+      console.error('Error fetching reports:', err);
     }
     setLoading(false);
   };
@@ -231,8 +231,8 @@ function AdminDashboard() {
         </table>
       </section>
       <section style={{ background: '#f9f9f9', borderRadius: 8, padding: 20, boxShadow: '0 2px 8px #0001' }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-          <h3 style={{ flex: 1 }}>Reports</h3>
+        <h3>Reports</h3>
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
           <label style={{ marginRight: 8 }}>Report Type:</label>
           <select value={selectedReportType} onChange={e => setSelectedReportType(e.target.value)} style={{ marginRight: 16, padding: 4 }}>
             <option value="monthly">Monthly</option>
@@ -259,16 +259,6 @@ function AdminDashboard() {
           <button onClick={handleGenerateReport} style={{ background: '#8e44ad', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>
             Generate Report
           </button>
-          {reports.length > 0 && (
-            <>
-              <button onClick={handleDownloadPDF} style={{ background: '#3498db', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer', marginRight: 8 }}>
-                Download PDF
-              </button>
-              <button onClick={handlePrint} style={{ background: '#2ecc71', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', cursor: 'pointer' }}>
-                Print
-              </button>
-            </>
-          )}
         </div>
         {loading ? <p>Loading reports...</p> : (
           reports.length > 0 ? (

@@ -66,7 +66,6 @@ const SpecialistProfile = () => {
       alert("Failed to update password");
     }
   };
-
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -87,6 +86,7 @@ const SpecialistProfile = () => {
       alert("Failed to update profile");
     }
   };
+
 
   if (!profile) return <div>Loading...</div>;
 
@@ -110,6 +110,16 @@ const SpecialistProfile = () => {
           <button onClick={() => setEditMode(false)} style={{ marginLeft: "1rem", background: '#eee', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Cancel</button>
         </div>
       ) : (
+        <div style={{ color: '#333', fontSize: 16 }}>
+          <div style={{ marginBottom: 8 }}><b>Name:</b> {profile.user?.full_name}</div>
+          <div style={{ marginBottom: 8 }}><b>Email:</b> {profile.user?.email}</div>
+          <div style={{ marginBottom: 8 }}><b>Phone:</b> {profile.user?.phone}</div>
+          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!profile.user?.profile_image ? "None" : profile.user?.profile_image}</div>
+          <div style={{ marginBottom: 8 }}><b>Working ID:</b> {profile.specialist_code}</div>
+          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Edit Profile</button>
+        </div>
+      )}
+=======
         <div style={{ color: '#333', fontSize: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ marginBottom: 8 }}><b>Name:</b> {profile.user?.full_name}</div>
           <div style={{ marginBottom: 8 }}><b>Email:</b> {profile.user?.email}</div>

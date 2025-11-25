@@ -88,7 +88,6 @@ const StaffProfile = () => {
     }
   };
 
-
   if (!profile) return <div>Loading...</div>;
 
   const user = profile.user || {};
@@ -112,15 +111,6 @@ const StaffProfile = () => {
           <button onClick={() => setEditMode(false)} style={{ marginLeft: "1rem", background: '#eee', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Cancel</button>
         </div>
       ) : (
-        <div style={{ color: '#333', fontSize: 16 }}>
-          <div style={{ marginBottom: 8 }}><b>Name:</b> {user.full_name}</div>
-          <div style={{ marginBottom: 8 }}><b>Email:</b> {user.email}</div>
-          <div style={{ marginBottom: 8 }}><b>Phone:</b> {user.phone}</div>
-          <div style={{ marginBottom: 8 }}><b>Profile Image:</b> {!user.profile_image ? "None" : user.profile_image}</div>
-          <button onClick={() => setEditMode(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Edit Profile</button>
-        </div>
-      )}
-=======
         <div style={{ color: '#333', fontSize: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ marginBottom: 8 }}><b>Name:</b> {user.full_name}</div>
           <div style={{ marginBottom: 8 }}><b>Email:</b> {user.email}</div>

@@ -1,7 +1,12 @@
-
 # Blood Sugar Monitoring
 
 A full-stack blood sugar monitoring system for clinics, built with FastAPI (Python) and React (JavaScript).
+
+## Quick Login Info
+- **Admin credentials:**
+	- Email: `admin@example.com`
+	- Password: `admin123`
+- If you have any login problems, please clear your browser cookies and try again.
 
 ## Features
 - Patient, Specialist, Staff, and Admin roles

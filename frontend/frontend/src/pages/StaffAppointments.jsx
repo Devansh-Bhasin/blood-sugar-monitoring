@@ -60,7 +60,6 @@ const StaffAppointments = () => {
 		 fetchAppointments();
 	 }, [filterSpecialist, navigate]);
 
-
 	 // Convert appointments to calendar events
 	 const events = appointments.map(a => ({
 		 id: a.appointment_id,
@@ -80,7 +79,6 @@ const StaffAppointments = () => {
 	 const handleBook = async e => {
 		 e.preventDefault();
 		 setNotification("");
-		 const staffId = localStorage.getItem("staff_id");
 		 const { start_time, end_time, patient_id, specialist_id, reason } = form;
 		 if (!start_time || !end_time) {
 			 setNotification("Please select both start and end date/time.");
@@ -152,7 +150,7 @@ const StaffAppointments = () => {
 		 });
 	 };
 
-	 return (
+	return (
 		<div style={{ padding: 24 }}>
 			<h2>Manage Appointments</h2>
 			<div style={{ marginBottom: 16 }}>
@@ -202,11 +200,6 @@ const StaffAppointments = () => {
 			<div style={{ marginBottom: 16, color: '#555', fontSize: 16 }}>
 				<strong>Instructions:</strong> Use the button above to create an appointment. The calendar below shows all appointments.
 			</div>
-			<label>Filter by Specialist: </label>
-			<select value={filterSpecialist} onChange={e => setFilterSpecialist(e.target.value)}>
-				<option value="">All</option>
-				{specialists.map(s => <option key={s.specialist_id} value={s.specialist_id}>{s.user.full_name}</option>)}
-			</select>
 			<Calendar
 				localizer={localizer}
 				events={events}
@@ -215,6 +208,7 @@ const StaffAppointments = () => {
 				style={{ height: 600, margin: "40px 0" }}
 				onSelectEvent={handleSelectEvent}
 			/>
+
 			{/* Appointment Details Modal */}
 			{selectedEvent && !showForm && (
 				<div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>

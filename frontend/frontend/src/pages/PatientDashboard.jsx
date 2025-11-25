@@ -44,7 +44,7 @@ function ReadingItem({ reading, refreshReadings, feedback }) {
   };
 
   // Find feedback for this reading
-  const readingFeedback = feedback?.find(f => f.reading_id === reading.reading_id);
+  const readingFeedback = feedback.find(f => f.reading_id === reading.reading_id);
 
   return (
     <div style={{ border: "1px solid gray", margin: "1rem", padding: "1rem" }}>

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import api from "../api/api";
 import { useNavigate } from "react-router-dom";
 
+
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
