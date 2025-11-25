@@ -1,3 +1,8 @@
+
+# ...existing code...
+
+router = APIRouter(prefix="/clinic_staff", tags=["clinic_staff"])
+
 # Admin-only: List all clinic staff
 @router.get("/all", response_model=list[schemas.ClinicStaff])
 def list_all_clinic_staff(db: Session = Depends(get_db), Authorization: str = Header(None)):
