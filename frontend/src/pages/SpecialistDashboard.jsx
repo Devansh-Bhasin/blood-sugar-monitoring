@@ -64,7 +64,6 @@ const SpecialistDashboard = () => {
     try {
       const specialistId = localStorage.getItem("specialist_id");
       if (!specialistId) return alert("Specialist ID missing");
-<<<<<<< HEAD
       // Check if feedback already exists for this specialist and reading
       const existing = feedbacks.find(fb => String(fb.specialist_id) === String(specialistId) && String(fb.reading_id) === String(selectedReadingId));
       if (existing) {
@@ -91,7 +90,6 @@ const SpecialistDashboard = () => {
           }
         );
       }
-=======
       // Always POST new feedback (backend should handle upsert or error)
       await api.post(
         "/feedback/",
@@ -107,7 +105,6 @@ const SpecialistDashboard = () => {
           },
         }
       );
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       setFeedbackText("");
       setSelectedReadingId(null);
       // Refresh feedbacks
@@ -166,7 +163,6 @@ const SpecialistDashboard = () => {
                   <p><b>Food:</b> {r.food_intake}</p>
                   <p><b>Activities:</b> {r.activities}</p>
                   <p><b>Notes:</b> {r.notes}</p>
-<<<<<<< HEAD
                   {existingFeedback ? (
                     <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #1976d2", borderRadius: 8, background: "#e3f2fd" }}>
                       <h4>Edit Feedback</h4>
@@ -223,7 +219,6 @@ const SpecialistDashboard = () => {
                       </button>
                     )}
                   </div>
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
                 </div>
               );
             })

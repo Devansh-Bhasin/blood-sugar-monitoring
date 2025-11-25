@@ -6,11 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-<<<<<<< HEAD
   const [role, setRole] = useState("patient");
-=======
-  const role = "patient";
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profileImage, setProfileImage] = useState("");
@@ -34,10 +30,6 @@ const Register = () => {
         phone,
         profile_image: profileImage
       };
-<<<<<<< HEAD
-=======
-<<<<<<<< HEAD:src/pages/Register.jsx
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       if (role === "patient") {
         const patientData = {
           user: userData,
@@ -60,18 +52,6 @@ const Register = () => {
       } else {
         await api.post("/users/", userData);
       }
-<<<<<<< HEAD
-=======
-========
-      const patientData = {
-        user: userData,
-        health_care_number: healthCareNumber,
-        date_of_birth: dateOfBirth,
-        preferred_unit: preferredUnit
-      };
-      await api.post("/patients/", patientData);
->>>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5:frontend/src/pages/Register.jsx
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
       alert("Registration successful");
       window.dispatchEvent(new Event("roleChanged"));
       navigate("/login");
@@ -135,15 +115,11 @@ const Register = () => {
             onChange={(e) => setProfileImage(e.target.value)}
             style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}
           />
-<<<<<<< HEAD
           <select value={role} onChange={(e) => setRole(e.target.value)} style={{ width: "100%", marginBottom: "1rem", padding: "0.75rem", borderRadius: 8, border: "1px solid #e0e0e0" }}>
             <option value="patient">Patient</option>
             <option value="specialist">Specialist</option>
             <option value="clinic_staff">Clinic Staff</option>
           </select>
-=======
-          {/* Only patient registration allowed. Role selection removed. */}
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
           {role === "patient" && (
             <>
               <input

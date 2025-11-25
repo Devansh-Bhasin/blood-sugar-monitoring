@@ -36,13 +36,9 @@ const StaffDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [specialists, setSpecialists] = useState([]);
   const [assignments, setAssignments] = useState({});
-<<<<<<< HEAD
   const [minNormal, setMinNormal] = useState(70);
   const [maxNormal, setMaxNormal] = useState(130);
   const [maxBorderline, setMaxBorderline] = useState(180);
-=======
-  // Removed global threshold state
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -231,7 +227,6 @@ const StaffDashboard = () => {
                 </select>
               </div>
             )}
-<<<<<<< HEAD
             {/* Per-patient threshold form */}
             <form
               onSubmit={async (e) => {
@@ -264,7 +259,6 @@ const StaffDashboard = () => {
 =======
             {/* Per-patient threshold form (loads and saves real backend values) */}
             <PatientThresholdForm patient={p} />
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
           </div>
         ))}
       </div>

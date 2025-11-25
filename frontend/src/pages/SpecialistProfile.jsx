@@ -1,8 +1,3 @@
-// ...restored code from backup...
-<<<<<<< HEAD
-=======
-
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api/api";
@@ -11,11 +6,8 @@ const SpecialistProfile = () => {
   const [profile, setProfile] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({});
-<<<<<<< HEAD
-=======
   const [showPasswordChange, setShowPasswordChange] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ current_password: '', new_password: '' });
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
 
   const navigate = useNavigate();
   useEffect(() => {
@@ -52,8 +44,6 @@ const SpecialistProfile = () => {
     });
   };
 
-<<<<<<< HEAD
-=======
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordForm({ ...passwordForm, [name]: value });
@@ -76,8 +66,6 @@ const SpecialistProfile = () => {
       alert("Failed to update password");
     }
   };
-
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -99,10 +87,7 @@ const SpecialistProfile = () => {
     }
   };
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
   if (!profile) return <div>Loading...</div>;
 
   return (
@@ -125,7 +110,6 @@ const SpecialistProfile = () => {
           <button onClick={() => setEditMode(false)} style={{ marginLeft: "1rem", background: '#eee', border: 'none', borderRadius: 6, padding: '0.6rem', marginTop: 8 }}>Cancel</button>
         </div>
       ) : (
-<<<<<<< HEAD
         <div style={{ color: '#333', fontSize: 16 }}>
           <div style={{ marginBottom: 8 }}><b>Name:</b> {profile.user?.full_name}</div>
           <div style={{ marginBottom: 8 }}><b>Email:</b> {profile.user?.email}</div>
@@ -162,7 +146,6 @@ const SpecialistProfile = () => {
           <button onClick={() => setShowPasswordChange(true)} style={{ background: '#1976d2', color: '#fff', border: 'none', borderRadius: 6, padding: '0.5rem' }}>Change Password</button>
         )}
       </div>
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
     </div>
   );
 };
