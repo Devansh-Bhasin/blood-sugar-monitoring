@@ -2,7 +2,7 @@ import jwt
 
 def get_current_user_id(token: str) -> int:
     try:
-        payload = jwt.decode(token, "your-secret-key", algorithms=["HS256"])
+        payload = jwt.decode(token, "supersecretkey", algorithms=["HS256"])
         return int(payload.get("sub"))
     except Exception:
         return None
