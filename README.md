@@ -1,7 +1,6 @@
 
 # Blood Sugar Monitoring System
 
-**Group 3 - Final Project**
 
 ## Project Overview
 This website is a full-stack blood sugar monitoring system for clinics, designed for Group 3. It enables patients, specialists, staff, and admins to manage blood sugar readings, appointments, and feedback in a secure, user-friendly environment.
