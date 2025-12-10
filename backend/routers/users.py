@@ -103,12 +103,19 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
     # Delete related patient record(s) and their dependencies
     patient = db.query(crud.models.Patient).filter(crud.models.Patient.patient_id == user_id).first()
     if patient:
-        db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == user_id).delete()
-        db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == user_id).delete()
-        db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == user_id).delete()
-        db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == user_id).delete()
+        # First, delete feedbacks referencing readings of this patient
+        readings = db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == user_id).all()
+        reading_ids = [r.reading_id for r in readings]
+        if reading_ids:
+            db.query(crud.models.Feedback).filter(crud.models.Feedback.reading_id.in_(reading_ids)).delete(synchronize_session=False)
+        # Now delete readings
+        db.query(crud.models.Reading).filter(crud.models.Reading.patient_id == user_id).delete(synchronize_session=False)
+        # Delete feedbacks where patient is the patient (not via reading)
+        db.query(crud.models.Feedback).filter(crud.models.Feedback.patient_id == user_id).delete(synchronize_session=False)
+        db.query(crud.models.Alert).filter(crud.models.Alert.patient_id == user_id).delete(synchronize_session=False)
+        db.query(crud.models.Threshold).filter(crud.models.Threshold.patient_id == user_id).delete(synchronize_session=False)
         if hasattr(crud.models, 'AIInsight'):
-            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == user_id).delete()
+            db.query(crud.models.AIInsight).filter(crud.models.AIInsight.patient_id == user_id).delete(synchronize_session=False)
         db.delete(patient)
 
     # Delete related specialist record(s) and their dependencies
