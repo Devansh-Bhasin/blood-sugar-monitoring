@@ -18,12 +18,9 @@ import StaffProfile from "./pages/StaffProfile";
 import AddReading from "./pages/AddReading";
 import Alerts from "./pages/Alerts";
 import PatientAppointments from "./pages/PatientAppointments";
-<<<<<<< HEAD
 import StaffAppointments from "./pages/StaffAppointments";
 import SpecialistAppointments from "./pages/SpecialistAppointments";
 import ProtectedRoute from "./components/ProtectedRoute";
-=======
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
 
 const App = () => (
   <AuthProvider>
@@ -43,13 +40,9 @@ const App = () => (
       <Route path="/patient-profile" element={<PatientProfile />} />
       <Route path="/specialist-profile" element={<SpecialistProfile />} />
       <Route path="/staff-profile" element={<StaffProfile />} />
-<<<<<<< HEAD
-      <Route path="/patient-appointments" element={<ProtectedRoute roleRequired={"patient"}><PatientAppointments /></ProtectedRoute>} />
-      <Route path="/staff-appointments" element={<ProtectedRoute roleRequired={["staff", "clinic_staff"]}><StaffAppointments /></ProtectedRoute>} />
-      <Route path="/specialist-appointments" element={<ProtectedRoute roleRequired={"specialist"}><SpecialistAppointments /></ProtectedRoute>} />
-=======
-      <Route path="/patient-appointments" element={<PatientAppointments />} />
->>>>>>> 4c61778ee2786bffdb2f4e4607f72b83f42e28b5
+  <Route path="/patient-appointments" element={<ProtectedRoute roleRequired={"patient"}><PatientAppointments /></ProtectedRoute>} />
+  <Route path="/staff-appointments" element={<ProtectedRoute roleRequired={["staff", "clinic_staff"]}><StaffAppointments /></ProtectedRoute>} />
+  <Route path="/specialist-appointments" element={<ProtectedRoute roleRequired={"specialist"}><SpecialistAppointments /></ProtectedRoute>} />
       {/* Catch-all route for 404s */}
       <Route path="*" element={<Register />} />
     </Routes>
