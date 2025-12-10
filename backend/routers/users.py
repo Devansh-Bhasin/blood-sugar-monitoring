@@ -130,6 +130,9 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
     # Delete related clinic_staff rows if they exist
     staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
     if staff_links:
+        # Delete all specialist_patient assignments where this staff assigned the link
+        if hasattr(crud.models, 'SpecialistPatient'):
+            db.query(crud.models.SpecialistPatient).filter(crud.models.SpecialistPatient.assigned_by == user_id).delete(synchronize_session=False)
         # Delete all appointments where this staff is referenced
         db.query(crud.models.Appointment).filter(crud.models.Appointment.staff_id == user_id).delete(synchronize_session=False)
         for link in staff_links:
