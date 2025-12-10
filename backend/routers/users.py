@@ -129,11 +129,14 @@ def delete_user(user_id: int, db: Session = Depends(get_db), Authorization: str 
 
     # Delete related clinic_staff rows if they exist
     staff_links = db.query(crud.models.ClinicStaff).filter(crud.models.ClinicStaff.staff_id == user_id).all()
-    for link in staff_links:
-        db.delete(link)
+    if staff_links:
+        # Delete all appointments where this staff is referenced
+        db.query(crud.models.Appointment).filter(crud.models.Appointment.staff_id == user_id).delete(synchronize_session=False)
+        for link in staff_links:
+            db.delete(link)
 
     # Delete thresholds configured by staff
-    db.query(crud.models.Threshold).filter(crud.models.Threshold.configured_by == user_id).delete()
+    db.query(crud.models.Threshold).filter(crud.models.Threshold.configured_by == user_id).delete(synchronize_session=False)
 
     # Commit after deleting related records to avoid FK constraint errors
     db.commit()
