@@ -27,9 +27,18 @@ This website is a full-stack blood sugar monitoring system for clinics, designed
 	- Access admin dashboard
 	- Oversee system activity
 
-## Admin Credentials
-- **Email:** `admin@example.com`
-- **Password:** `admin123`
+
+## Demo Accounts
+
+- **Admin**
+	- Email: `admin@example.com`
+	- Password: `admin123`
+- **Staff**
+	- Email: `staff01@email.com`
+	- Password: `staff01`
+- **Specialist**
+	- Email: `specialist01@email.com`
+	- Password: `specialist01`
 
 ## Quick Login Info
 
